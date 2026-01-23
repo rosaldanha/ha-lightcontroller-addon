@@ -1,24 +1,73 @@
 <script setup lang="ts">
 import { Icon } from "@iconify/vue";
+import { ref } from "vue";
 
-// Definindo as propriedades que o cartão recebe
 const props = defineProps({
     device: {
         type: Object,
         required: true,
-        // Espera um objeto com { name, model, isOnline }
     },
 });
 
-// Funções placeholder para os botões
+// Estado para controlar o loading de cada ação
+const isLoading = ref({
+    backup: false,
+    restore: false,
+    update: false,
+});
+
+const handleBackup = async () => {
+    if (isLoading.value.backup) return;
+    isLoading.value.backup = true;
+
+    try {
+        // 1. Chama a API
+        const data: any = await $fetch("/api/backup", {
+            method: "POST",
+            body: { deviceName: props.device.name }, // Envia o nome do dispositivo
+        });
+
+        if (!data || data.trim().length === 0) {
+            alert(
+                "Nenhuma configuração encontrada para fazer backup (entidades não encontradas).",
+            );
+            return;
+        }
+
+        // 2. Cria o arquivo para download no navegador
+        const blob = new Blob([data], { type: "text/plain" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        // Nome do arquivo: backup-nomedodispositivo-data.txt
+        const dateStr = new Date().toISOString().slice(0, 10);
+        link.setAttribute(
+            "download",
+            `backup-${props.device.name}-${dateStr}.txt`,
+        );
+
+        document.body.appendChild(link);
+        link.click();
+
+        // Limpeza
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error(err);
+        alert("Falha ao realizar backup. Verifique o console.");
+    } finally {
+        isLoading.value.backup = false;
+    }
+};
+
 const handleAction = (action: string) => {
-    console.log(
-        `Ação acionada: ${action} para o dispositivo: ${props.device.name}`,
-    );
-    alert(
-        `${action} não implementado ainda para ${props.device.name}.\n(Verifique o console do navegador)`,
-    );
-    // Futuramente, aqui chamaríamos outra rota da API do servidor
+    if (action === "BACKUP") {
+        handleBackup();
+    } else {
+        console.log(`Ação ${action} ainda não implementada.`);
+        alert(`Ação ${action} em desenvolvimento.`);
+    }
 };
 </script>
 
@@ -30,7 +79,7 @@ const handleAction = (action: string) => {
         ]"
     >
         <div class="p-4 flex justify-between items-start mb-auto">
-            <div>
+            <div class="overflow-hidden">
                 <h3
                     class="text-lg font-medium text-gray-100 truncate"
                     :title="device.name"
@@ -43,7 +92,7 @@ const handleAction = (action: string) => {
             </div>
 
             <div
-                class="flex items-center space-x-1 text-xs font-bold uppercase tracking-wider"
+                class="flex items-center space-x-1 text-xs font-bold uppercase tracking-wider flex-shrink-0 ml-2"
             >
                 <span v-if="device.isOnline" class="text-esphome-success"
                     >Online</span
@@ -71,10 +120,17 @@ const handleAction = (action: string) => {
             </button>
 
             <button
-                @click="handleAction('BACKUP')"
-                class="text-gray-400 hover:text-esphome-accent flex items-center px-2 py-1 text-sm font-medium transition-colors"
+                @click="handleBackup()"
+                :disabled="isLoading.backup"
+                class="text-gray-400 hover:text-esphome-accent flex items-center px-2 py-1 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-wait"
             >
-                <Icon icon="mdi:cloud-download-outline" class="mr-1" /> BACKUP
+                <Icon
+                    v-if="isLoading.backup"
+                    icon="mdi:loading"
+                    class="mr-1 animate-spin"
+                />
+                <Icon v-else icon="mdi:cloud-download-outline" class="mr-1" />
+                BACKUP
             </button>
 
             <button
@@ -94,7 +150,6 @@ const handleAction = (action: string) => {
 </template>
 
 <style scoped>
-/* Ajustes finos para imitar os botões do ESPHome */
 button {
     outline: none;
 }

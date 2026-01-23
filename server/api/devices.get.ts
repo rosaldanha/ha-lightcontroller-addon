@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
         config.supervisorToken || process.env.SUPERVISOR_TOKEN;
 
     // URL da API (Nabu Casa ou Local)
-    const haApiUrl = process.env.SUPERVISOR_TOKEN || "http://supervisor/";
+    const haApiUrl = process.env.SUPERVISOR_URL || "http://supervisor/";
 
     let devices = [];
 
