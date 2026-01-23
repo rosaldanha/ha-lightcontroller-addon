@@ -46,6 +46,22 @@ export default defineEventHandler(async (event) => {
               {% endif %}
            {% endif %}
         {% endfor %}
+        {% for i in range(1, 33) %}
+           {% set entity_id = 'sensor.' ~ name ~ '_pi' ~ i ~ 'sw' %}
+
+           {% if states[entity_id] is defined %}
+              {% set val = states(entity_id) %}
+
+              {% if val != 'unknown' and val != 'unavailable' %}
+                  {# Formata a string com aspas: id;"valor" #}
+                  {% set line = entity_id ~ ';"' ~ val ~ '"' %}
+
+                  {# Adiciona na lista #}
+                  {% set result.lines = result.lines + [line] %}
+              {% endif %}
+           {% endif %}
+        {% endfor %}
+
 
         {# O filtro join garante que só haja quebra de linha onde tiver dados #}
         {{ result.lines | join('\n') }}
