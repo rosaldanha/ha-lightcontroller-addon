@@ -1,5 +1,5 @@
 name: "Sorj-Net Controller Manager"
-version: "1.1.17"
+version: "1.1.18"
 homeassistant: "2026.1.1"
 slug: "sorj_net_manager"
 description: "Dashboard para gerenciar dispositivos sorj-net.lightcontroller, estilo ESPHome."
@@ -21,4 +21,4 @@ ingress_port: 3000
 options: {}
 schema: {}
 map:
-  - homeassistant_config:rw
+  - config:rw

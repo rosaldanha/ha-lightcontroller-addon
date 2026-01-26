@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
   try {
     // Caminho padrão onde o Add-on ESPHome salva os arquivos
     // O mapeamento 'map: - config:rw' no config.yaml permite acessar isso.
-    const yamlPath = `/homeassistant/esphome/${safeDeviceName}.yaml`;
+    const yamlPath = `homeassistant/esphome/${safeDeviceName}.yaml`;
 
     // Tenta ler o arquivo
     const yamlContent = await fs.readFile(yamlPath, "utf-8");
@@ -83,7 +83,7 @@ export default defineEventHandler(async (event) => {
     // Se falhar (arquivo não existe ou sem permissão), adiciona um aviso no ZIP
     zip.file(
       "error_yaml.txt",
-      `Could not find config file at /homeassistant/esphome/${safeDeviceName}.yaml. \nError: ${err.message}`,
+      `Could not find config file at homeassistant/esphome/${safeDeviceName}.yaml. \nError: ${err.message}`,
     );
   }
 
