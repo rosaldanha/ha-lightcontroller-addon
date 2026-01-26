@@ -1,34 +1,35 @@
 # --- Estágio de Build ---
-FROM oven/bun:1 as builder
+FROM node:20-alpine as builder
 
 WORKDIR /app
 
-# Copia os arquivos de dependência
-COPY package.json bun.lockb ./
+# Instala ferramentas necessárias para compilar pacotes nativos (se houver)
+RUN apk add --no-cache python3 make g++
 
-# Instala dependências (incluindo devDependencies para o build do Nuxt)
-RUN bun install --frozen-lockfile
+# Copia os arquivos de dependência
+COPY package.json package-lock.json* ./
+
+# Instala dependências usando NPM (mais seguro no HA Supervisor)
+RUN npm install
 
 # Copia o código fonte
 COPY . .
 
-# Executa o build do Nuxt para produção
-RUN bun run build
+# Executa o build do Nuxt
+RUN npm run build
 
 # --- Estágio de Execução ---
-# Usamos uma imagem slim do bun para o runtime
-FROM oven/bun:1-slim
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Copia apenas o diretório de saída do build (.output)
-COPY --from=builder /app/.output ./.output
-
-# Define variáveis de ambiente para o Nuxt em produção
+# Define variáveis de ambiente para produção
 ENV NODE_ENV=production
-# O Home Assistant Ingress espera que a aplicação escute na porta definida no config.yaml (ingress_port: 3000)
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
-# O comando de entrada para rodar o servidor Nuxt gerado
-CMD ["bun", "run", ".output/server/index.mjs"]
+# Copia o output gerado no estágio anterior
+COPY --from=builder /app/.output /app/.output
+
+# Comando para iniciar
+CMD ["node", ".output/server/index.mjs"]
