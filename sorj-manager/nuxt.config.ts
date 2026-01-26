@@ -1,32 +1,36 @@
 // sorj-manager/nuxt.config.ts
 export default defineNuxtConfig({
-    // 1. DESATIVA O SSR: Isso evita que o servidor tente adivinhar URLs.
-    // O app será renderizado 100% no navegador do usuário.
+    // 1. SPA Mode (Mantém desativado o SSR para evitar erros de hidratação)
     ssr: false,
 
     devtools: { enabled: true },
     modules: ["@nuxtjs/tailwindcss"],
 
     app: {
-        // Força caminhos relativos
+        // Define a base como relativa
         baseURL: "./",
-        buildAssetsDir: "assets",
+        // REMOVIDO: buildAssetsDir: 'assets'
+        // MOTIVO: Vamos deixar o padrão '_nuxt' para evitar conflitos internos do Vite
     },
 
     router: {
         options: {
-            // 2. MODO HASH: Usa URLs tipo 'index.html#/device'
-            // Isso impede que o Home Assistant pense que você está trocando de página
+            // Navegação por Hash (#) é obrigatória para Ingress
             hashMode: true,
         },
     },
 
-    nitro: {
-        preset: "node-server",
+    // NOVO: Força o Vite a gerar caminhos relativos nos arquivos compilados
+    vite: {
+        base: "./",
     },
 
-    // Garante que o build entenda que é relativo
+    // Otimizações para evitar erros de payload
     experimental: {
         payloadExtraction: false,
+    },
+
+    nitro: {
+        preset: "node-server",
     },
 });
