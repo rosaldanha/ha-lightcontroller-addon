@@ -10,6 +10,7 @@ export default defineNuxtConfig({
         // AQUI ESTÁ O SEGREDO: Ponto e barra.
         // Isso fará o HTML gerar: window.__NUXT__.config={... baseURL:"./"}
         baseURL: "./",
+        cdnURL: "./",
 
         // Mantemos o padrão para não confundir o Vite
     },
