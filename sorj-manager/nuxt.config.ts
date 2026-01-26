@@ -22,9 +22,6 @@ export default defineNuxtConfig({
     },
 
     // Configuração explícita para o empacotador (Vite) usar caminhos relativos
-    vite: {
-        base: "./",
-    },
 
     nitro: {
         // Garante que o servidor Node sirva os arquivos corretamente
