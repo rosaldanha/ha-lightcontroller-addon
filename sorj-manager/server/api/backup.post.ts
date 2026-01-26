@@ -7,6 +7,11 @@ import {
 } from "h3";
 import JSZip from "jszip";
 import fs from "node:fs/promises";
+import { promisify } from "node:util";
+import { exec } from "node:child_process";
+// Promisify transforma o 'exec' (baseado em callback) em uma Promise
+// para podermos usar async/await de forma limpa.
+const execAsync = promisify(exec);
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
@@ -71,8 +76,12 @@ export default defineEventHandler(async (event) => {
   try {
     // Caminho padrão onde o Add-on ESPHome salva os arquivos
     // O mapeamento 'map: - config:rw' no config.yaml permite acessar isso.
+    const { stdout, stderr } = await execAsync("pwd");
     const yamlPath = `homeassistant/esphome/${safeDeviceName}.yaml`;
+    console.error(stdout);
+    const { stdout2, stderr2 } = await execAsync("df");
 
+    console.error(stdout2);
     // Tenta ler o arquivo
     const yamlContent = await fs.readFile(yamlPath, "utf-8");
 
