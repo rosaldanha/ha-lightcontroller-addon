@@ -12,7 +12,6 @@ export default defineNuxtConfig({
         baseURL: "./",
 
         // Mantemos o padrão para não confundir o Vite
-        buildAssetsDir: "assets",
     },
 
     router: {
