@@ -76,9 +76,8 @@ export default defineEventHandler(async (event) => {
   try {
     // Caminho padrão onde o Add-on ESPHome salva os arquivos
     // O mapeamento 'map: - config:rw' no config.yaml permite acessar isso.
-    const { stdout, stderr } = await execAsync("ls ../config");
-    const yamlPath = `homeassistant/esphome/${safeDeviceName}.yaml`;
-    console.error(stdout);
+
+    const yamlPath = `../config/esphome/${safeDeviceName}.yaml`;
 
     // Tenta ler o arquivo
     const yamlContent = await fs.readFile(yamlPath, "utf-8");
