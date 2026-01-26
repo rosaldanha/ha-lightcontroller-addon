@@ -78,10 +78,10 @@ export default defineEventHandler(async (event) => {
     // O mapeamento 'map: - config:rw' no config.yaml permite acessar isso.
 
     const yamlPath = `../config/esphome/${safeDeviceName}.yaml`;
-    console.log(yamlPath);
+
     // Tenta ler o arquivo
     const yamlContent = await fs.readFile(yamlPath, "utf-8");
-
+    console.log(yamlContent);
     // Adiciona ao ZIP
     zip.file(`${safeDeviceName}.yaml`, yamlContent);
   } catch (err: any) {
