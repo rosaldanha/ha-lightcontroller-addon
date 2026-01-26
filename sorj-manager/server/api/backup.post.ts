@@ -1,5 +1,12 @@
 // server/api/backup.post.ts
-import { defineEventHandler, readBody } from "h3";
+import {
+    defineEventHandler,
+    readBody,
+    createError,
+    setResponseHeader,
+} from "h3";
+import JSZip from "jszip";
+import fs from "node:fs/promises";
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event);
@@ -11,9 +18,17 @@ export default defineEventHandler(async (event) => {
             statusMessage: "Device Name required",
         });
 
+    // Sanitiza o nome (ex: "My Device" -> "my_device") para usar no arquivo e template
     const safeDeviceName = deviceName.toLowerCase().replace(/\s+/g, "_");
 
-    const templateQuery = `
+    // Inicializa o objeto ZIP
+    const zip = new JSZip();
+
+    // =================================================================================
+    // TAREFA 1: Gerar o CSV dos Estados (Usando seu Template Jinja2)
+    // =================================================================================
+    try {
+        const templateQuery = `
         {% set name = '${safeDeviceName}' %}
         {% set result = namespace(lines=[]) %}
         {% for i in range(1, 33) %}
@@ -31,21 +46,65 @@ export default defineEventHandler(async (event) => {
 
         {# O filtro join garante que só haja quebra de linha onde tiver dados #}
         {{ result.lines | join('\n') }}
-  `;
+      `;
 
-    // UMA ÚNICA LINHA!
-    return await ha.runTemplate(templateQuery);
+        // Executa o template no Home Assistant
+        const csvData = await ha.runTemplate(templateQuery);
+
+        // Adiciona o resultado ao ZIP
+        if (
+            csvData &&
+            typeof csvData === "string" &&
+            csvData.trim().length > 0
+        ) {
+            zip.file(`${safeDeviceName}_states.csv`, csvData);
+        } else {
+            zip.file(
+                "states_info.txt",
+                "No entities found or Home Assistant returned empty data.",
+            );
+        }
+    } catch (err: any) {
+        console.error("Erro ao gerar CSV:", err);
+        zip.file("error_csv.txt", `Error fetching states: ${err.message}`);
+    }
+
+    // =================================================================================
+    // TAREFA 2: Buscar o arquivo YAML no disco local (/config/esphome)
+    // =================================================================================
+    try {
+        // Caminho padrão onde o Add-on ESPHome salva os arquivos
+        // O mapeamento 'map: - config:rw' no config.yaml permite acessar isso.
+        const yamlPath = `/config/esphome/${safeDeviceName}.yaml`;
+
+        // Tenta ler o arquivo
+        const yamlContent = await fs.readFile(yamlPath, "utf-8");
+
+        // Adiciona ao ZIP
+        zip.file(`${safeDeviceName}.yaml`, yamlContent);
+    } catch (err: any) {
+        console.error("Erro ao ler YAML:", err);
+        // Se falhar (arquivo não existe ou sem permissão), adiciona um aviso no ZIP
+        zip.file(
+            "error_yaml.txt",
+            `Could not find config file at /config/esphome/${safeDeviceName}.yaml. \nError: ${err.message}`,
+        );
+    }
+
+    // =================================================================================
+    // TAREFA 3: Finalizar e Enviar o ZIP
+    // =================================================================================
+
+    // Gera o buffer binário do ZIP
+    const content = await zip.generateAsync({ type: "nodebuffer" });
+
+    // Define os headers para o navegador entender que é um arquivo ZIP para download
+    setResponseHeader(event, "Content-Type", "application/zip");
+    setResponseHeader(
+        event,
+        "Content-Disposition",
+        `attachment; filename=backup-${safeDeviceName}.zip`,
+    );
+
+    return content;
 });
-// This values can only be set on firmware.
-// {% for i in range(1, 33) %}
-//    {% set entity_id = 'sensor.' ~ name ~ '_pi' ~ i ~ 'sw' %}
-//    {% if states[entity_id] is defined %}
-//       {% set val = states(entity_id) %}
-//       {% if val != 'unknown' and val != 'unavailable' %}
-//           {# Formata a string com aspas: id;"valor" #}
-//           {% set line = entity_id ~ ';"' ~ val ~ '"' %}
-//           {# Adiciona na lista #}
-//           {% set result.lines = result.lines + [line] %}
-//       {% endif %}
-//    {% endif %}
-// {% endfor %}
