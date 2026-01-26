@@ -52,11 +52,7 @@ export default defineEventHandler(async (event) => {
         const csvData = await ha.runTemplate(templateQuery);
 
         // Adiciona o resultado ao ZIP
-        if (
-            csvData &&
-            typeof csvData === "string" &&
-            csvData.trim().length > 0
-        ) {
+        if (csvData && typeof csvData === "string" && csvData.length > 0) {
             zip.file(`${safeDeviceName}_states.csv`, csvData);
         } else {
             zip.file(
