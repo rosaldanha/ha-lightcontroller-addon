@@ -1,5 +1,5 @@
 // server/api/devices.get.ts
-import { defineEventHandler } from "h3";
+import { defineEventHandler, createError } from "h3";
 
 export default defineEventHandler(async (event) => {
     // NÃO PRECISA MAIS DE IMPORTS DE CONFIG OU HTTPS!
@@ -30,23 +30,18 @@ export default defineEventHandler(async (event) => {
 
     try {
         // OLHA COMO FICOU SIMPLES:
-        return await ha.runTemplate(templateQuery);
+        const data = await ha.runTemplate(templateQuery);
+        return data || [];
     } catch (error) {
         // Se falhar (ex: sem token local), retornamos mock
-        console.warn("Falha ao conectar no HA, usando Mock:", error);
-        return [
-            {
-                id: "mock1",
-                name: "DevTest Mock (Via Class)",
-                model: "ESP32",
-                isOnline: true,
+        console.warn("Failed to fetch devices:", error.message);
+        throw createError({
+            statusCode: 502,
+            statusMessage: "Could not communicate with Home Assistant.",
+            data: {
+                originalError: error.message,
+                hint: "Check your SUPERVISOR_TOKEN or Home Assistant URL.",
             },
-            {
-                id: "mock2",
-                name: "Cozinha Mock (Via Class)",
-                model: "ESP8266",
-                isOnline: false,
-            },
-        ];
+        });
     }
 });
