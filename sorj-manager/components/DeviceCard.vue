@@ -23,21 +23,28 @@ const handleBackup = async () => {
 
   try {
     // 1. Chama a API
-    const data: any = await $fetch<Blob>("api/backup", {
+    console.log("Starting native fetch backup...");
+
+    // USANDO FETCH NATIVO (Bypassing Nuxt $fetch)
+    // Isso evita o erro de parsing do ofetch
+    const response = await fetch("./api/backup", {
       method: "POST",
-      body: { deviceName: props.device.name }, // Envia o nome do dispositivo
-      responseType: "blob",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // No fetch nativo, precisamos converter o body para string manualmente
+      body: JSON.stringify({ deviceName: props.device.name }),
     });
 
-    if (!data || data.trim().length === 0) {
-      alert(
-        "Nenhuma configuração encontrada para fazer backup (entidades não encontradas).",
-      );
-      return;
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.statusText}`);
     }
 
-    // 2. Cria o arquivo para download no navegador
-    const blob = new Blob([data], { type: "text/plain" });
+    // Converte a resposta bruta diretamente para Blob
+    const blob = await response.blob();
+
+    // -- Lógica de Download (Igual a anterior) --
+    //const url = window.URL.createObjectURL(blob);
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
 
