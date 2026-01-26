@@ -1,44 +1,32 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+// sorj-manager/nuxt.config.ts
 export default defineNuxtConfig({
+    // 1. DESATIVA O SSR: Isso evita que o servidor tente adivinhar URLs.
+    // O app será renderizado 100% no navegador do usuário.
+    ssr: false,
+
     devtools: { enabled: true },
     modules: ["@nuxtjs/tailwindcss"],
-    // runtimeConfig: {
-    //     // Chaves privadas (disponíveis apenas nas rotas server/api/*)
-    //     // Se você deixar string vazia, ele tenta ler de process.env.SUPERVISOR_TOKEN
-    //     supervisorToken: "",
-    //     haApiUrl: "https://n2zzkqhzfnhgu451hculm83lnknh8mii.ui.nabu.casa/api",
-    //     // Chaves públicas (disponíveis no .vue / frontend)
-    //     public: {
-    //         // Exemplo: apiBase: '/api'
-    //     },
-    // },
 
     app: {
-        baseUrl: "./",
+        // Força caminhos relativos
+        baseURL: "./",
         buildAssetsDir: "assets",
-        head: {
-            title: "LightController Manager",
-            meta: [
-                {
-                    name: "viewport",
-                    content: "width=device-width, initial-scale=1",
-                },
-                { charset: "utf-8" },
-            ],
-            bodyAttrs: {
-                // Garante o fundo escuro padrão estilo ESPHome
-                class: "bg-[#1c1c1c] text-gray-100",
-            },
-        },
     },
-    experimental: {
-        // Desativa a extração de payload JSON.
-        // Isso ajuda a evitar que o Nuxt tente buscar arquivos JSON em rotas absolutas erradas.
-        payloadExtraction: false,
-        renderJsonPayloads: false,
+
+    router: {
+        options: {
+            // 2. MODO HASH: Usa URLs tipo 'index.html#/device'
+            // Isso impede que o Home Assistant pense que você está trocando de página
+            hashMode: true,
+        },
     },
 
     nitro: {
         preset: "node-server",
+    },
+
+    // Garante que o build entenda que é relativo
+    experimental: {
+        payloadExtraction: false,
     },
 });
