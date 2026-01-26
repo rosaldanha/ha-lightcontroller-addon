@@ -23,7 +23,7 @@ const handleBackup = async () => {
 
     try {
         // 1. Chama a API
-        const data: any = await $fetch("./api/backup", {
+        const data: any = await $fetch("api/backup", {
             method: "POST",
             body: { deviceName: props.device.name }, // Envia o nome do dispositivo
         });
