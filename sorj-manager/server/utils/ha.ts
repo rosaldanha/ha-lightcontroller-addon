@@ -40,7 +40,7 @@ class HomeAssistantClient {
                     "Content-Type": "application/json",
                     ...options.headers,
                 },
-                agent: this.agent,
+                //agent: this.agent,
             });
         } catch (error: any) {
             // Re-lança o erro para ser tratado por quem chamou
