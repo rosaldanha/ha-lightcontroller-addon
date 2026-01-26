@@ -52,7 +52,7 @@ export default defineEventHandler(async (event) => {
         {# O filtro join garante que só haja quebra de linha onde tiver dados #}
         {{ result.lines | join('\n') }}
       `;
-    console.log(templateQuery);
+
     // Executa o template no Home Assistant
     const csvData = await ha.runTemplate(templateQuery);
 
@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
     // O mapeamento 'map: - config:rw' no config.yaml permite acessar isso.
 
     const yamlPath = `../config/esphome/${safeDeviceName}.yaml`;
-
+    console.log(yamlPath);
     // Tenta ler o arquivo
     const yamlContent = await fs.readFile(yamlPath, "utf-8");
 
