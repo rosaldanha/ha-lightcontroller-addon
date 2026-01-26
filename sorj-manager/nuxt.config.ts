@@ -15,6 +15,7 @@ export default defineNuxtConfig({
 
     app: {
         baseUrl: "./",
+        buildAssetsDir: "assets",
         head: {
             title: "LightController Manager",
             meta: [
@@ -29,5 +30,15 @@ export default defineNuxtConfig({
                 class: "bg-[#1c1c1c] text-gray-100",
             },
         },
+    },
+    experimental: {
+        // Desativa a extração de payload JSON.
+        // Isso ajuda a evitar que o Nuxt tente buscar arquivos JSON em rotas absolutas erradas.
+        payloadExtraction: false,
+        renderJsonPayloads: false,
+    },
+
+    nitro: {
+        preset: "node-server",
     },
 });
