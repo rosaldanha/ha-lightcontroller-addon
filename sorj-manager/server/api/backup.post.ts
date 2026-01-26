@@ -24,8 +24,8 @@ export default defineEventHandler(async (event) => {
     });
 
   // Sanitiza o nome (ex: "My Device" -> "my_device") para usar no arquivo e template
-  const safeDeviceName = deviceName.toLowerCase().replace(/\s+/g, "_");
 
+  const safeDeviceName = deviceName.toLowerCase().replace(/[-\s]+/g, "_");
   // Inicializa o objeto ZIP
   const zip = new JSZip();
 
