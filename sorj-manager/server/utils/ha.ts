@@ -26,7 +26,8 @@ class HomeAssistantClient {
     async request<T>(endpoint: string, options: any = {}): Promise<T> {
         // Pega as credenciais agora (Lazy Load)
         const { token, baseUrl } = this.credentials;
-
+        const isHttps = baseUrl.startsWith("https://");
+        const agent = isHttps ? this.agent : undefined;
         if (!token) {
             // Se não tiver token, nem tenta conectar (evita erros de rede desnecessários)
             throw new Error("MISSING_TOKEN");
@@ -40,7 +41,7 @@ class HomeAssistantClient {
                     "Content-Type": "application/json",
                     ...options.headers,
                 },
-                //agent: this.agent,
+                agent: this.agent,
             });
         } catch (error: any) {
             // Re-lança o erro para ser tratado por quem chamou
