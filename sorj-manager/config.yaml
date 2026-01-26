@@ -1,5 +1,5 @@
 name: "Sorj-Net Controller Manager"
-version: "1.0.7"
+version: "1.0.8"
 slug: "sorj_net_manager"
 description: "Dashboard para gerenciar dispositivos sorj-net.lightcontroller, estilo ESPHome."
 url: "https://github.com/rosaldanha/ha-lightcontroller-addon"

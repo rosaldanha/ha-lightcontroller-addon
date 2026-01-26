@@ -14,6 +14,7 @@ export default defineNuxtConfig({
     // },
 
     app: {
+        baseUrl: "./",
         head: {
             title: "LightController Manager",
             meta: [
