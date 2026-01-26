@@ -81,7 +81,7 @@ export default defineEventHandler(async (event) => {
 
     // Tenta ler o arquivo
     const yamlContent = await fs.readFile(yamlPath, "utf-8");
-    console.log(yamlContent);
+
     // Adiciona ao ZIP
     zip.file(`${safeDeviceName}.yaml`, yamlContent);
   } catch (err: any) {
