@@ -1,36 +1,38 @@
 // sorj-manager/nuxt.config.ts
 export default defineNuxtConfig({
-    // 1. SPA Mode (Mantém desativado o SSR para evitar erros de hidratação)
+    // 1. SPA Mode: Renderização apenas no navegador
     ssr: false,
 
     devtools: { enabled: true },
     modules: ["@nuxtjs/tailwindcss"],
 
     app: {
-        // Define a base como relativa
+        // AQUI ESTÁ O SEGREDO: Ponto e barra.
+        // Isso fará o HTML gerar: window.__NUXT__.config={... baseURL:"./"}
         baseURL: "./",
-        // REMOVIDO: buildAssetsDir: 'assets'
-        // MOTIVO: Vamos deixar o padrão '_nuxt' para evitar conflitos internos do Vite
+
+        // Mantemos o padrão para não confundir o Vite
+        buildAssetsDir: "_nuxt",
     },
 
     router: {
         options: {
-            // Navegação por Hash (#) é obrigatória para Ingress
+            // Adiciona o # nas URLs para não quebrar a navegação do HA
             hashMode: true,
         },
     },
 
-    // NOVO: Força o Vite a gerar caminhos relativos nos arquivos compilados
+    // Configuração explícita para o empacotador (Vite) usar caminhos relativos
     vite: {
         base: "./",
     },
 
-    // Otimizações para evitar erros de payload
-    experimental: {
-        payloadExtraction: false,
+    nitro: {
+        // Garante que o servidor Node sirva os arquivos corretamente
+        preset: "node-server",
     },
 
-    nitro: {
-        preset: "node-server",
+    experimental: {
+        payloadExtraction: false,
     },
 });
