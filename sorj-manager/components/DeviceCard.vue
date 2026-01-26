@@ -51,7 +51,7 @@ const handleBackup = async () => {
     link.href = url;
     // Nome do arquivo: backup-nomedodispositivo-data.txt
     const dateStr = new Date().toISOString().slice(0, 10);
-    link.setAttribute("download", `backup-${props.device.name}-${dateStr}.txt`);
+    link.setAttribute("download", `backup-${props.device.name}-${dateStr}.zip`);
 
     document.body.appendChild(link);
     link.click();
