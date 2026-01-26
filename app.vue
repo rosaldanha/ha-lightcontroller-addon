@@ -53,14 +53,14 @@ const {
                 class="flex justify-center items-center h-64 text-gray-400"
             >
                 <Icon icon="mdi:loading" class="animate-spin text-4xl mr-3" />
-                Carregando dispositivos...
+                Loading devices...
             </div>
 
             <div
                 v-else-if="error"
                 class="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-lg"
             >
-                Erro ao carregar dispositivos: {{ error.message }}
+                Failed to load devices: {{ error.message }}
             </div>
 
             <div

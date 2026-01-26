@@ -15,6 +15,7 @@ const isLoading = ref({
     restore: false,
     update: false,
 });
+const showRestoreModal = ref(false);
 
 const handleBackup = async () => {
     if (isLoading.value.backup) return;
@@ -64,8 +65,10 @@ const handleBackup = async () => {
 const handleAction = (action: string) => {
     if (action === "BACKUP") {
         handleBackup();
+    } else if (action === "RESTORE") {
+        // Abre o modal
+        showRestoreModal.value = true;
     } else {
-        console.log(`Ação ${action} ainda não implementada.`);
         alert(`Ação ${action} em desenvolvimento.`);
     }
 };
@@ -146,6 +149,11 @@ const handleAction = (action: string) => {
                 <Icon icon="mdi:dots-vertical" />
             </button>
         </div>
+        <RestoreModal
+            :show="showRestoreModal"
+            :device="device"
+            @close="showRestoreModal = false"
+        />
     </div>
 </template>
 
