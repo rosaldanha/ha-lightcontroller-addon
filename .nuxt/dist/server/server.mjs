@@ -1,0 +1,1 @@
+export { default } from "file:///home/ricardosaldanha/learn/ha-lightcontroller-addon/node_modules/@nuxt/vite-builder/dist/vite-node-entry.mjs"
