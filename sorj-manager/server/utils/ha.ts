@@ -16,10 +16,7 @@ class HomeAssistantClient {
         const token =
             config.supervisorToken || process.env.SUPERVISOR_TOKEN || "";
 
-        let rawUrl =
-            config.public?.haUrl ||
-            process.env.SUPERVISOR_URL ||
-            "https://hass.sal.net.br";
+        let rawUrl = process.env.SUPERVISOR_URL || "http://supervisor";
         // Remove barra no final
         const baseUrl = rawUrl.replace(/\/$/, "");
 
