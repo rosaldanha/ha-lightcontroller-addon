@@ -61,7 +61,7 @@ const handleFileChange = async (event: Event) => {
 
                 try {
                     // Chama nossa API para cada linha
-                    await $fetch("api/restore", {
+                    await $fetch("./api/restore", {
                         method: "POST",
                         body: { entity_id: entityId, value: rawValue },
                     });
