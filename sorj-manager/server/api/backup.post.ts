@@ -79,7 +79,7 @@ export default defineEventHandler(async (event) => {
     const { stdout, stderr } = await execAsync("pwd");
     const yamlPath = `homeassistant/esphome/${safeDeviceName}.yaml`;
     console.error(stdout);
-    const { stdout2, stderr2 } = await execAsync("df");
+    const { stdout2, stderr2 } = await execAsync("ls /");
 
     console.error(stdout2);
     // Tenta ler o arquivo
