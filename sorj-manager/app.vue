@@ -7,7 +7,7 @@ const {
     pending,
     error,
     refresh,
-} = await useFetch("/api/devices");
+} = await useFetch("api/devices");
 </script>
 
 <template>
