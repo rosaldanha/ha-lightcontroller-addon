@@ -1,5 +1,5 @@
 name: "Sorj-Net Controller Manager"
-version: "1.0.5"
+version: "1.0.6"
 slug: "sorj_net_manager"
 description: "Dashboard para gerenciar dispositivos sorj-net.lightcontroller, estilo ESPHome."
 url: "https://github.com/rosaldanha/ha-lightcontroller-addon"
@@ -12,6 +12,7 @@ startup: application
 boot: auto
 # Habilita o acesso à API do Supervisor e do Core
 hassio_api: true
+homeassistant_api: true
 # Habilita a interface web no sidebar do HA (Ingress)
 panel_icon: "mdi:chip"
 ingress: true
