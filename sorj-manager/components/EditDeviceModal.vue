@@ -7,7 +7,7 @@ const props = defineProps({
   device: Object,
 });
 
-const emit = defineEmits(["close", "save"]);
+const emit = defineEmits(["close", "save", "edit"]);
 
 // Controle das Abas
 const activeTab = ref("base"); // 'base', 'io', 'subdevices'
