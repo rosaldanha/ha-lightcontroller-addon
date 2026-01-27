@@ -117,7 +117,7 @@ const handleAction = (action: string) => {
       </button>
 
       <button
-        @click="handleAction('EDIT')"
+        @click="$emit('edit', device)"
         class="text-gray-400 hover:text-esphome-accent flex items-center px-2 py-1 text-sm font-medium transition-colors"
       >
         <Icon icon="mdi:pencil" class="mr-1" /> EDIT
