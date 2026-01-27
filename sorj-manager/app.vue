@@ -85,6 +85,7 @@ const openEditModal = (device: any) => {
           v-for="device in devices"
           :key="device.id"
           :device="device"
+          @edit="openEditModal"
         />
       </div>
     </main>
