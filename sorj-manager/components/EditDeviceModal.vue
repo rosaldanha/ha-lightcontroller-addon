@@ -90,7 +90,7 @@ const save = () => {
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
   >
     <div
-      class="bg-[#2b2b2b] w-full max-w-5xl rounded-lg shadow-2xl border border-gray-700 flex flex-col max-h-[90vh]"
+      class="bg-[#2b2b2b] w-full max-w-5xl rounded-lg shadow-2xl border border-gray-700 flex flex-col h-[85vh]"
     >
       <div
         class="flex justify-between items-center p-6 border-b border-gray-700"
