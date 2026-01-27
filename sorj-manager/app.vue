@@ -3,6 +3,7 @@ import { Icon } from "@iconify/vue";
 import EditDeviceModal from "./components/EditDeviceModal.vue";
 
 const showEditModal = ref(false);
+const deviceToEdit = ref(null);
 // Busca os dados da nossa API interna ao carregar a página
 const {
   data: devices,
@@ -10,6 +11,12 @@ const {
   error,
   refresh,
 } = await useFetch("api/devices");
+
+const openEditModal = (device: any) => {
+  console.log("Abrindo edição para:", device.name); // Debug no console
+  deviceToEdit.value = device;
+  showEditModal.value = true;
+};
 </script>
 
 <template>
