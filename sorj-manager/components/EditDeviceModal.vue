@@ -222,7 +222,7 @@ const save = () => {
               <div class="col-span-4">
                 pi<span class="text-gray-600">X</span>swstate
               </div>
-              <div class="col-span-4">
+              <div class="col-span-3">
                 po<span class="text-gray-600">X</span>device
               </div>
             </div>
@@ -255,7 +255,7 @@ const save = () => {
                   />
                 </div>
 
-                <div class="col-span-4">
+                <div class="col-span-3">
                   <input
                     v-model="formData.base[`po${i}device`]"
                     placeholder="-"
