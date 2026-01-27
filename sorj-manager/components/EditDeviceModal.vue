@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, onMounted } from "vue";
 import { Icon } from "@iconify/vue";
 
 const props = defineProps({
@@ -7,28 +7,41 @@ const props = defineProps({
   device: Object,
 });
 
-const emit = defineEmits(["close", "save", "edit"]);
+const emit = defineEmits(["close", "save"]);
 
-// Controle das Abas
-const activeTab = ref("base"); // 'base', 'io', 'subdevices'
+const activeTab = ref("base");
 
-// DADOS MOCK - Simulando o que viria do parse do YAML
-const formData = ref({
-  // Seção 1: Substitutions (Base Config)
-  base: {
+// Função auxiliar para gerar dados mock das 16 portas
+const createMockBaseData = () => {
+  const baseData: any = {
     device_name: "kinconya16_0101",
     fixed_mac: "0E:FF:31:16:B1:53",
     device_static_ip: "172.18.100.39",
-    pi1swstate: "sw-01-01",
-    area: "sotao", // Vem de esphome: area
-  },
+    area: "sotao",
+  };
 
-  // Seção 2: Packages (Input/Output Config)
-  // Simulando portas que podem ser ativadas/desativadas
+  // Inicializa os campos de 1 a 16 vazios ou com valores de exemplo
+  for (let i = 1; i <= 16; i++) {
+    baseData[`pi${i}device`] = "";
+    baseData[`po${i}device`] = "";
+    baseData[`pi${i}swstate`] = "";
+  }
+
+  // Valores de exemplo para ver na tela
+  baseData["pi1swstate"] = "sw-01-01";
+  baseData["po1device"] = "Luzes_Cozinha";
+  baseData["pi2device"] = "Sensor_Presenca";
+
+  return baseData;
+};
+
+const formData = ref({
+  base: createMockBaseData(),
+
   io: [
     {
       id: "po1",
-      enabled: false, // Simula o comentário #
+      enabled: false,
       type: "light",
       vars: {
         po_name: "Luzes Cozinha",
@@ -38,7 +51,7 @@ const formData = ref({
     },
     {
       id: "po2",
-      enabled: true, // Simula pacote ativo
+      enabled: true,
       type: "switch",
       vars: {
         po_name: "Ventilador",
@@ -48,7 +61,6 @@ const formData = ref({
     },
   ],
 
-  // Seção 3: Sub-Devices (Lista dinâmica)
   subdevices: [
     {
       id: "Luzes_Cozinha",
@@ -58,7 +70,6 @@ const formData = ref({
   ],
 });
 
-// Ações
 const addSubDevice = () => {
   formData.value.subdevices.push({ id: "", name: "", area_id: "" });
 };
@@ -68,7 +79,6 @@ const removeSubDevice = (index: number) => {
 };
 
 const save = () => {
-  // Aqui futuramente montaremos o YAML de volta
   console.log("Saving data:", formData.value);
   emit("save", formData.value);
 };
@@ -80,7 +90,7 @@ const save = () => {
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
   >
     <div
-      class="bg-[#2b2b2b] w-full max-w-4xl rounded-lg shadow-2xl border border-gray-700 flex flex-col max-h-[90vh]"
+      class="bg-[#2b2b2b] w-full max-w-5xl rounded-lg shadow-2xl border border-gray-700 flex flex-col max-h-[90vh]"
     >
       <div
         class="flex justify-between items-center p-6 border-b border-gray-700"
@@ -104,14 +114,12 @@ const save = () => {
               : 'text-gray-400 hover:text-gray-200 hover:bg-[#404040]'
           "
         >
-          <Icon icon="mdi:tune" class="mr-2 text-lg" />
-          Base Config
+          <Icon icon="mdi:tune" class="mr-2 text-lg" /> Base Config
           <div
             v-if="activeTab === 'base'"
             class="absolute top-0 left-0 right-0 h-0.5 bg-esphome-accent"
           ></div>
         </button>
-
         <button
           @click="activeTab = 'io'"
           class="flex-1 py-3 px-4 text-sm font-medium transition-colors relative flex justify-center items-center"
@@ -121,14 +129,12 @@ const save = () => {
               : 'text-gray-400 hover:text-gray-200 hover:bg-[#404040]'
           "
         >
-          <Icon icon="mdi:import-export" class="mr-2 text-lg" />
-          I/O Config (Packages)
+          <Icon icon="mdi:import-export" class="mr-2 text-lg" /> I/O Config
           <div
             v-if="activeTab === 'io'"
             class="absolute top-0 left-0 right-0 h-0.5 bg-esphome-accent"
           ></div>
         </button>
-
         <button
           @click="activeTab = 'subdevices'"
           class="flex-1 py-3 px-4 text-sm font-medium transition-colors relative flex justify-center items-center"
@@ -138,8 +144,7 @@ const save = () => {
               : 'text-gray-400 hover:text-gray-200 hover:bg-[#404040]'
           "
         >
-          <Icon icon="mdi:devices" class="mr-2 text-lg" />
-          Sub-Devices
+          <Icon icon="mdi:devices" class="mr-2 text-lg" /> Sub-Devices
           <div
             v-if="activeTab === 'subdevices'"
             class="absolute top-0 left-0 right-0 h-0.5 bg-esphome-accent"
@@ -150,18 +155,28 @@ const save = () => {
       <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
         <div v-if="activeTab === 'base'" class="space-y-6 animate-fade-in">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="col-span-2">
+            <div class="col-span-2 md:col-span-1">
               <label
                 class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider"
-                >Device Name (Substitution)</label
+                >Device Name</label
               >
               <input
                 v-model="formData.base.device_name"
                 type="text"
-                class="w-full bg-gray-800 border border-gray-600 rounded p-2.5 text-white focus:ring-2 focus:ring-esphome-accent focus:border-transparent outline-none transition-all"
+                class="input-field"
               />
             </div>
-
+            <div class="col-span-2 md:col-span-1">
+              <label
+                class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider"
+                >Area</label
+              >
+              <input
+                v-model="formData.base.area"
+                type="text"
+                class="input-field"
+              />
+            </div>
             <div>
               <label
                 class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider"
@@ -170,7 +185,7 @@ const save = () => {
               <input
                 v-model="formData.base.device_static_ip"
                 type="text"
-                class="w-full bg-gray-800 border border-gray-600 rounded p-2.5 text-white focus:ring-2 focus:ring-esphome-accent outline-none"
+                class="input-field"
               />
             </div>
             <div>
@@ -181,31 +196,73 @@ const save = () => {
               <input
                 v-model="formData.base.fixed_mac"
                 type="text"
-                class="w-full bg-gray-800 border border-gray-600 rounded p-2.5 text-white font-mono focus:ring-2 focus:ring-esphome-accent outline-none"
+                class="input-field font-mono"
               />
+            </div>
+          </div>
+
+          <hr class="border-gray-700" />
+
+          <div class="bg-gray-800/40 border border-gray-700 rounded-lg p-5">
+            <div class="flex items-center mb-4">
+              <Icon
+                icon="mdi:ethernet"
+                class="text-esphome-accent text-xl mr-2"
+              />
+              <h4 class="text-white font-medium">Port Configuration (1-16)</h4>
             </div>
 
-            <div>
-              <label
-                class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider"
-                >Area (ESPHome)</label
-              >
-              <input
-                v-model="formData.base.area"
-                type="text"
-                class="w-full bg-gray-800 border border-gray-600 rounded p-2.5 text-white focus:ring-2 focus:ring-esphome-accent outline-none"
-              />
+            <div
+              class="grid grid-cols-12 gap-4 mb-2 px-2 text-xs font-bold text-gray-500 uppercase tracking-wider"
+            >
+              <div class="col-span-1 text-center">#</div>
+              <div class="col-span-4">
+                pi<span class="text-gray-600">X</span>device
+              </div>
+              <div class="col-span-4">
+                po<span class="text-gray-600">X</span>device
+              </div>
+              <div class="col-span-3">
+                pi<span class="text-gray-600">X</span>swstate
+              </div>
             </div>
-            <div>
-              <label
-                class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider"
-                >Initial State (pi1swstate)</label
+
+            <div class="space-y-2">
+              <div
+                v-for="i in 16"
+                :key="i"
+                class="grid grid-cols-12 gap-4 items-center bg-gray-900/50 p-2 rounded hover:bg-gray-800 transition-colors"
               >
-              <input
-                v-model="formData.base.pi1swstate"
-                type="text"
-                class="w-full bg-gray-800 border border-gray-600 rounded p-2.5 text-white focus:ring-2 focus:ring-esphome-accent outline-none"
-              />
+                <div
+                  class="col-span-1 text-center text-gray-400 font-mono font-bold"
+                >
+                  {{ i }}
+                </div>
+
+                <div class="col-span-4">
+                  <input
+                    v-model="formData.base[`pi${i}device`]"
+                    placeholder="-"
+                    class="w-full bg-transparent border-b border-gray-700 focus:border-esphome-accent text-sm text-white px-2 py-1 outline-none transition-colors placeholder-gray-700"
+                  />
+                </div>
+
+                <div class="col-span-4">
+                  <input
+                    v-model="formData.base[`po${i}device`]"
+                    placeholder="-"
+                    class="w-full bg-transparent border-b border-gray-700 focus:border-esphome-accent text-sm text-white px-2 py-1 outline-none transition-colors placeholder-gray-700"
+                  />
+                </div>
+
+                <div class="col-span-3">
+                  <input
+                    v-model="formData.base[`pi${i}swstate`]"
+                    placeholder="-"
+                    class="w-full bg-transparent border-b border-gray-700 focus:border-esphome-accent text-sm text-white px-2 py-1 outline-none transition-colors placeholder-gray-700"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -214,7 +271,6 @@ const save = () => {
           <p class="text-sm text-gray-400 mb-4">
             Enable packages to configure Input/Output mappings.
           </p>
-
           <div
             v-for="(item, idx) in formData.io"
             :key="item.id"
@@ -237,7 +293,6 @@ const save = () => {
                   <p class="text-xs text-gray-500">{{ item.type }} package</p>
                 </div>
               </div>
-
               <label class="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
@@ -252,29 +307,26 @@ const save = () => {
                 }}</span>
               </label>
             </div>
-
             <div
               v-if="item.enabled"
               class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-700/50"
             >
               <div>
-                <label class="text-xs text-gray-400 block mb-1"
-                  >Name (po_name)</label
-                >
+                <label class="text-xs text-gray-400 block mb-1">Name</label>
                 <input
                   v-model="item.vars.po_name"
                   type="text"
-                  class="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-sm text-white focus:ring-1 focus:ring-esphome-accent outline-none"
+                  class="input-field"
                 />
               </div>
               <div>
                 <label class="text-xs text-gray-400 block mb-1"
-                  >Device ID (po_device)</label
+                  >Device ID</label
                 >
                 <input
                   v-model="item.vars.po_device"
                   type="text"
-                  class="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-sm text-white focus:ring-1 focus:ring-esphome-accent outline-none"
+                  class="input-field"
                 />
               </div>
             </div>
@@ -296,18 +348,16 @@ const save = () => {
               <Icon icon="mdi:plus" class="mr-1" /> Add Device
             </button>
           </div>
-
           <div
             v-if="formData.subdevices.length === 0"
             class="text-center py-8 text-gray-500 italic border border-dashed border-gray-700 rounded"
           >
             No sub-devices configured.
           </div>
-
           <div
             v-for="(sub, index) in formData.subdevices"
             :key="index"
-            class="bg-gray-800 border border-gray-700 rounded p-4 relative group"
+            class="bg-gray-800 border border-gray-700 rounded p-4 relative group grid grid-cols-1 md:grid-cols-3 gap-4"
           >
             <button
               @click="removeSubDevice(index)"
@@ -315,34 +365,18 @@ const save = () => {
             >
               <Icon icon="mdi:trash-can-outline" />
             </button>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="text-xs text-gray-400 block mb-1">ID</label>
-                <input
-                  v-model="sub.id"
-                  placeholder="e.g. Luzes_Cozinha"
-                  class="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-sm text-white focus:ring-1 focus:ring-esphome-accent outline-none"
-                />
-              </div>
-              <div>
-                <label class="text-xs text-gray-400 block mb-1"
-                  >Friendly Name</label
-                >
-                <input
-                  v-model="sub.name"
-                  placeholder="e.g. Luzes Cozinha"
-                  class="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-sm text-white focus:ring-1 focus:ring-esphome-accent outline-none"
-                />
-              </div>
-              <div>
-                <label class="text-xs text-gray-400 block mb-1">Area ID</label>
-                <input
-                  v-model="sub.area_id"
-                  placeholder="e.g. cozinha"
-                  class="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1.5 text-sm text-white focus:ring-1 focus:ring-esphome-accent outline-none"
-                />
-              </div>
+            <div>
+              <label class="text-xs text-gray-400 block mb-1">ID</label
+              ><input v-model="sub.id" class="input-field" />
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 block mb-1"
+                >Friendly Name</label
+              ><input v-model="sub.name" class="input-field" />
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 block mb-1">Area ID</label
+              ><input v-model="sub.area_id" class="input-field" />
             </div>
           </div>
         </div>
@@ -361,8 +395,7 @@ const save = () => {
           @click="save"
           class="px-5 py-2 bg-esphome-accent hover:brightness-110 text-white rounded shadow-lg shadow-esphome-accent/20 transition-all text-sm font-medium flex items-center"
         >
-          <Icon icon="mdi:content-save-outline" class="mr-2" />
-          Save Changes
+          <Icon icon="mdi:content-save-outline" class="mr-2" /> Save Changes
         </button>
       </div>
     </div>
@@ -370,11 +403,9 @@ const save = () => {
 </template>
 
 <style scoped>
-/* Pequena animação de fade para a troca de abas */
 .animate-fade-in {
   animation: fadeIn 0.2s ease-in-out;
 }
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -385,8 +416,6 @@ const save = () => {
     transform: translateY(0);
   }
 }
-
-/* Scrollbar fina para o modal */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -396,5 +425,10 @@ const save = () => {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #4b5563;
   border-radius: 20px;
+}
+
+/* Classe utilitária para inputs padrão */
+.input-field {
+  @apply w-full bg-gray-800 border border-gray-600 rounded p-2.5 text-white focus:ring-2 focus:ring-esphome-accent focus:border-transparent outline-none transition-all text-sm;
 }
 </style>
