@@ -40,7 +40,7 @@ const handleFileChange = async (event: Event) => {
 
     // 2. ENVIA PARA O SERVIDOR (Salva YAML e retorna CSV)
     const response = await $fetch<{ csv_content: string; message: string }>(
-      "/api/upload_restore",
+      "./api/upload_restore",
       {
         method: "POST",
         body: formData,
