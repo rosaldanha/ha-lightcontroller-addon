@@ -215,15 +215,15 @@ const save = () => {
             <div
               class="grid grid-cols-12 gap-4 mb-2 px-2 text-xs font-bold text-gray-500 uppercase tracking-wider"
             >
-              <div class="col-span-1 text-center">#</div>
+              <div class="col-span-1 text-center">X</div>
               <div class="col-span-4">
                 pi<span class="text-gray-600">X</span>device
               </div>
               <div class="col-span-4">
-                po<span class="text-gray-600">X</span>device
-              </div>
-              <div class="col-span-3">
                 pi<span class="text-gray-600">X</span>swstate
+              </div>
+              <div class="col-span-4">
+                po<span class="text-gray-600">X</span>device
               </div>
             </div>
 
@@ -249,15 +249,15 @@ const save = () => {
 
                 <div class="col-span-4">
                   <input
-                    v-model="formData.base[`po${i}device`]"
+                    v-model="formData.base[`pi${i}swstate`]"
                     placeholder="-"
                     class="w-full bg-transparent border-b border-gray-700 focus:border-esphome-accent text-sm text-white px-2 py-1 outline-none transition-colors placeholder-gray-700"
                   />
                 </div>
 
-                <div class="col-span-3">
+                <div class="col-span-4">
                   <input
-                    v-model="formData.base[`pi${i}swstate`]"
+                    v-model="formData.base[`po${i}device`]"
                     placeholder="-"
                     class="w-full bg-transparent border-b border-gray-700 focus:border-esphome-accent text-sm text-white px-2 py-1 outline-none transition-colors placeholder-gray-700"
                   />
