@@ -5,7 +5,7 @@ import path from "node:path";
 
 export default defineNuxtModule({
     meta: {
-        name: "load-options-json",
+        name: "load-hass-options",
     },
     setup(options, nuxt) {
         const filePath = "/data/options.json"; //path.resolve(nuxt.options.rootDir, 'options.json')
