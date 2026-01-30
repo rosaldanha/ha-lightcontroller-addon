@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     ssr: false,
 
     devtools: { enabled: true },
-    modules: ["@nuxtjs/tailwindcss", "./modules/load-hass-options"],
+    modules: ["@nuxtjs/tailwindcss"],
 
     app: {
         // AQUI ESTÁ O SEGREDO: Ponto e barra.
