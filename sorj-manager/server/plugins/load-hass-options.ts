@@ -5,7 +5,7 @@ import path from "node:path";
 export default defineNitroPlugin((nitroApp) => {
     // Ajuste o caminho conforme a estrutura do seu container Docker/Addon
     // Em muitos containers o diretório de trabalho é a raiz do projeto
-    const filePath = "/data/options.js";
+    const filePath = "/data/options.json";
 
     console.log("🔄 [Nitro Plugin] Iniciando leitura de opções...");
 
