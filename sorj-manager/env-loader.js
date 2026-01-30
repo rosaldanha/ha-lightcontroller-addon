@@ -12,7 +12,7 @@ try {
       // 1. Converte chave para MAIÚSCULA
       const upperKey = key.toUpperCase();
       // 2. Adiciona o prefixo NUXT_
-      const envName = `NUXT_${upperKey}`;
+      const envName = `${upperKey}`;
 
       // 3. Pega o valor e garante que é string
       let value = data[key];
