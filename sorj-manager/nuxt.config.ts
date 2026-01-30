@@ -22,7 +22,7 @@ export default defineNuxtConfig({
         esphomeConfigFolder:
             process.env.ESPHOME_CONFIG_DIR ||
             hassOptions.esphome_config_folder ||
-            "/config/esphome",
+            "error",
 
         // Se precisar no frontend (vue), coloque dentro de public:
         public: {

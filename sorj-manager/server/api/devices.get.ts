@@ -4,9 +4,10 @@ import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
 import { EsphomeConfig, ESPSCHEMA } from "~/utils/EsphomeConfig";
-
+import { useRuntimeConfig } from "#imports";
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig();
+    console.log(config);
     const configDir = config.esphomeConfigFolder; // process.env.ESPHOME_CONFIG_DIR;
     console.log(configDir);
     const configs: EsphomeConfig[] = [];
