@@ -9,7 +9,7 @@ export default defineNuxtModule({
     },
     setup(options, nuxt) {
         const filePath = "/data/options.json"; //path.resolve(nuxt.options.rootDir, 'options.json')
-
+        console.log("starting module load-hass-options");
         if (fs.existsSync(filePath)) {
             try {
                 const rawData = fs.readFileSync(filePath, "utf-8");
