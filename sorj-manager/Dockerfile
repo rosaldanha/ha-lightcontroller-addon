@@ -5,6 +5,7 @@ WORKDIR /app
 
 # Instala ferramentas necessárias para compilar pacotes nativos (se houver)
 RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache jq
 
 # Copia os arquivos de dependência
 COPY package.json package-lock.json* ./
@@ -30,6 +31,8 @@ ENV PORT=3000
 
 # Copia o output gerado no estágio anterior
 COPY --from=builder /app/.output /app/.output
-
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 # Comando para iniciar
 CMD ["node", ".output/server/index.mjs"]
