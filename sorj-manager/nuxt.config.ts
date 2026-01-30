@@ -1,3 +1,6 @@
+import { hassOptions } from "./utils/HassOptions";
+import { defineNuxtConfig } from "nuxt/config";
+
 // sorj-manager/nuxt.config.ts
 export default defineNuxtConfig({
     // 1. SPA Mode: Renderização apenas no navegador
@@ -14,7 +17,18 @@ export default defineNuxtConfig({
 
         // Mantemos o padrão para não confundir o Vite
     },
+    runtimeConfig: {
+        // Chaves aqui são PRIVADAS (disponíveis apenas em server/api)
+        esphomeConfigFolder:
+            process.env.ESPHOME_CONFIG_DIR ||
+            hassOptions.esphome_config_folder ||
+            "/config/esphome",
 
+        // Se precisar no frontend (vue), coloque dentro de public:
+        public: {
+            // ...
+        },
+    },
     router: {
         options: {
             // Adiciona o # nas URLs para não quebrar a navegação do HA
