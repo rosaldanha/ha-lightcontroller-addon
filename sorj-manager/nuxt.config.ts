@@ -17,7 +17,7 @@ const getHassOptions = () => {
   return {};
 };
 const hassOptions = getHassOptions();
-
+console.log("loaded hassOptions");
 // sorj-manager/nuxt.config.ts
 export default defineNuxtConfig({
   // 1. SPA Mode: Renderização apenas no navegador
