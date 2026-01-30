@@ -15,17 +15,17 @@ export default defineNitroPlugin((nitroApp) => {
             const jsonOptions = JSON.parse(rawData);
 
             // Acessa a configuração de tempo de execução
-            const config = useRuntimeConfig();
 
             // --- ATUALIZAÇÃO MÁGICA ---
             // Aqui sobrescrevemos os valores da configuração carregada na memória
             // com os valores do arquivo JSON.
-            Object.assign(config, jsonOptions);
 
-            // Se tiver chaves públicas, precisa tratar especificamente
-            if (config.public) {
-                // Exemplo: se suas options tiverem chaves que devem ir pro public
-                // Object.assign(config.public, jsonOptions.public)
+            for (const key in jsonOptions) {
+                const envKey = `NUXT_${key.toUpperCase()}`;
+                // Só define se ainda não estiver definido (opcional, mas recomendado para não sobrescrever variáveis do sistema real)
+                if (!process.env[envKey]) {
+                    process.env[envKey] = String(jsonOptions[key]);
+                }
             }
 
             console.log(
