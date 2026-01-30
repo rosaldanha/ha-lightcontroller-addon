@@ -7,6 +7,8 @@ const getHassOptions = () => {
         // O caminho padrão no Hassio é /data/options.json
         if (fs.existsSync("/data/options.json")) {
             const rawData = fs.readFileSync("/data/options.json", "utf-8");
+            console.log(rawData);
+            console.log(JSON.parse(rawData));
             return JSON.parse(rawData);
         }
     } catch (e) {
