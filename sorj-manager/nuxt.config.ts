@@ -1,4 +1,3 @@
-import { hassOptions } from "./utils/HassOptions";
 import { defineNuxtConfig } from "nuxt/config";
 
 // sorj-manager/nuxt.config.ts
@@ -7,7 +6,7 @@ export default defineNuxtConfig({
     ssr: false,
 
     devtools: { enabled: true },
-    modules: ["@nuxtjs/tailwindcss"],
+    modules: ["@nuxtjs/tailwindcss", "./modules/load-hass-options"],
 
     app: {
         // AQUI ESTÁ O SEGREDO: Ponto e barra.
@@ -19,10 +18,7 @@ export default defineNuxtConfig({
     },
     runtimeConfig: {
         // Chaves aqui são PRIVADAS (disponíveis apenas em server/api)
-        esphomeConfigFolder:
-            process.env.ESPHOME_CONFIG_DIR ||
-            hassOptions.esphome_config_folder ||
-            "error",
+        esphomeConfigFolder: process.env.ESPHOME_CONFIG_DIR || "error",
 
         // Se precisar no frontend (vue), coloque dentro de public:
         public: {
