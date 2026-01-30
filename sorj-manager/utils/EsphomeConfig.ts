@@ -6,12 +6,30 @@ export class EsphomeInclude {
     constructor(public data: string | object) {}
 }
 
-const IncludeYamlType = new yaml.Type("!include", {
+const includeScalar = new yaml.Type("!include", {
     kind: "scalar",
+    construct: (data: any) => new EsphomeInclude(data),
     instanceOf: EsphomeInclude,
-    represent: (entry: any) => entry.data,
+    represent: (entry: EsphomeInclude) => {
+        if (typeof entry.data === "string") return entry.data;
+        return yaml.DEFAULT_SQUENCE_STYLE; // Fallback for representing non-scalars
+    },
 });
-export const ESPSCHEMA = yaml.DEFAULT_SCHEMA.extend([IncludeYamlType]);
+
+const includeMapping = new yaml.Type("!include", {
+    kind: "mapping",
+    construct: (data: any) => new EsphomeInclude(data),
+    instanceOf: EsphomeInclude,
+    represent: (entry: EsphomeInclude) => {
+        if (typeof entry.data === "object") return entry.data;
+        return yaml.DEFAULT_SQUENCE_STYLE; // Fallback for representing non-mappings
+    },
+});
+
+export const ESPSCHEMA = yaml.DEFAULT_SCHEMA.extend([
+    includeScalar,
+    includeMapping,
+]);
 
 export class Substitutions {
     device_name: string = "";

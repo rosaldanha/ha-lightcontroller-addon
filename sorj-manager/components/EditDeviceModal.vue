@@ -12,12 +12,33 @@ const emit = defineEmits(["close", "save"]);
 
 const activeTab = ref("base_config");
 const formData = ref<EsphomeConfig | undefined>();
+const validationErrors = ref<{ subdevices: { [key: number]: any } }>({
+    subdevices: {},
+});
+
+const areas = ref<string[]>([]);
+
+const { data: fetchedAreas, error } = await useFetch<string[]>("/api/areas", {
+    lazy: true,
+    server: false,
+});
+
+watch(
+    fetchedAreas,
+    (newAreas) => {
+        if (newAreas) {
+            areas.value = newAreas;
+        }
+    },
+    { immediate: true },
+);
 
 watch(
     () => props.device,
     (newDevice) => {
         if (newDevice) {
             formData.value = JSON.parse(JSON.stringify(newDevice));
+            validationErrors.value.subdevices = {}; // Reset errors on new device
         } else {
             formData.value = undefined;
         }
@@ -25,9 +46,80 @@ watch(
     { immediate: true },
 );
 
+const validateSubDevices = () => {
+    if (!formData.value?.esphome?.devices) return true;
+
+    const errors: { [key: number]: any } = {};
+    const ids = new Map();
+    let isValid = true;
+
+    for (const [index, device] of formData.value.esphome.devices.entries()) {
+        // Check for empty fields
+        if (!device.id) {
+            if (!errors[index]) errors[index] = {};
+            errors[index].id = "ID cannot be empty.";
+            isValid = false;
+        }
+        if (!device.name) {
+            if (!errors[index]) errors[index] = {};
+            errors[index].name = "Name cannot be empty.";
+            isValid = false;
+        }
+        if (!device.area_id) {
+            if (!errors[index]) errors[index] = {};
+            errors[index].area_id = "Area ID cannot be empty.";
+            isValid = false;
+        }
+
+        // Check for duplicate IDs
+        if (device.id) {
+            if (ids.has(device.id)) {
+                isValid = false;
+                // Mark current and previous device with error
+                if (!errors[index]) errors[index] = {};
+                errors[index].id = `Duplicate ID: "${device.id}".`;
+                const prevIndex = ids.get(device.id);
+                if (!errors[prevIndex]) errors[prevIndex] = {};
+                errors[prevIndex].id = `Duplicate ID: "${device.id}".`;
+            } else {
+                ids.set(device.id, index);
+            }
+        }
+    }
+
+    validationErrors.value.subdevices = errors;
+    return isValid;
+};
+
 const save = () => {
+    if (!validateSubDevices()) {
+        alert("Please fix the validation errors before saving.");
+        return;
+    }
     if (formData.value) {
         emit("save", formData.value);
+    }
+};
+
+const addSubDevice = () => {
+    if (!formData.value) return;
+    if (!formData.value.esphome.devices) {
+        formData.value.esphome.devices = [];
+    }
+    formData.value.esphome.devices.push({ id: "", name: "", area_id: "" });
+};
+
+const removeSubDevice = (index: number) => {
+    if (!formData.value?.esphome?.devices) return;
+    const deviceName =
+        formData.value.esphome.devices[index]?.name || "untitled";
+    if (
+        window.confirm(
+            `Are you sure you want to delete the sub-device "${deviceName}"? This action cannot be undone.`,
+        )
+    ) {
+        formData.value.esphome.devices.splice(index, 1);
+        validateSubDevices(); // Re-validate after removal
     }
 };
 </script>
@@ -135,11 +227,21 @@ const save = () => {
                                     class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider"
                                     >Area</label
                                 >
-                                <input
+                                <select
                                     v-model="formData.esphome.area"
-                                    type="text"
                                     class="input-field"
-                                />
+                                >
+                                    <option disabled value="">
+                                        Please select one
+                                    </option>
+                                    <option
+                                        v-for="area in areas"
+                                        :key="area"
+                                        :value="area"
+                                    >
+                                        {{ area }}
+                                    </option>
+                                </select>
                             </div>
                             <div>
                                 <label
@@ -170,9 +272,119 @@ const save = () => {
                 </div>
                 <div
                     v-else-if="activeTab === 'sub_devices'"
-                    class="animate-fade-in"
+                    class="animate-fade-in space-y-4"
                 >
-                    <!-- TODO: Implement Sub-Devices fields -->
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-sm text-gray-400">
+                            Manage virtual sub-devices attached to this
+                            controller.
+                        </p>
+                        <button
+                            @click="addSubDevice"
+                            class="bg-esphome-accent hover:brightness-110 text-white px-4 py-2 rounded-md flex items-center text-sm font-semibold"
+                        >
+                            <Icon icon="mdi:plus" class="mr-1 text-base" /> New
+                        </button>
+                    </div>
+                    <div
+                        v-if="
+                            !formData?.esphome?.devices ||
+                            formData.esphome.devices.length === 0
+                        "
+                        class="text-center py-10 text-gray-500 italic border-2 border-dashed border-gray-700 rounded-lg"
+                    >
+                        No sub-devices configured.
+                    </div>
+                    <div
+                        v-for="(sub, index) in formData?.esphome?.devices"
+                        :key="index"
+                        class="bg-gray-800 border border-gray-700 rounded-lg p-4 relative group grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2"
+                    >
+                        <button
+                            @click="removeSubDevice(index)"
+                            class="absolute top-3 right-3 text-gray-500 hover:text-red-400 opacity-50 hover:opacity-100 transition-opacity"
+                        >
+                            <Icon
+                                icon="mdi:trash-can-outline"
+                                class="text-lg"
+                            />
+                        </button>
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-gray-400 mb-1"
+                                >ID</label
+                            >
+                            <input
+                                v-model="sub.id"
+                                class="input-field"
+                                :class="{
+                                    'border-red-500/50':
+                                        validationErrors.subdevices[index]?.id,
+                                }"
+                            />
+                            <p
+                                v-if="validationErrors.subdevices[index]?.id"
+                                class="text-red-400 text-xs mt-1"
+                            >
+                                {{ validationErrors.subdevices[index].id }}
+                            </p>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-gray-400 mb-1"
+                                >Friendly Name</label
+                            >
+                            <input
+                                v-model="sub.name"
+                                class="input-field"
+                                :class="{
+                                    'border-red-500/50':
+                                        validationErrors.subdevices[index]
+                                            ?.name,
+                                }"
+                            />
+                            <p
+                                v-if="validationErrors.subdevices[index]?.name"
+                                class="text-red-400 text-xs mt-1"
+                            >
+                                {{ validationErrors.subdevices[index].name }}
+                            </p>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-gray-400 mb-1"
+                                >Area ID</label
+                            >
+                            <select
+                                v-model="sub.area_id"
+                                class="input-field"
+                                :class="{
+                                    'border-red-500/50':
+                                        validationErrors.subdevices[index]
+                                            ?.area_id,
+                                }"
+                            >
+                                <option disabled value="">
+                                    Please select one
+                                </option>
+                                <option
+                                    v-for="area in areas"
+                                    :key="area"
+                                    :value="area"
+                                >
+                                    {{ area }}
+                                </option>
+                            </select>
+                            <p
+                                v-if="
+                                    validationErrors.subdevices[index]?.area_id
+                                "
+                                class="text-red-400 text-xs mt-1"
+                            >
+                                {{ validationErrors.subdevices[index].area_id }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
                 <div v-else-if="activeTab === 'inputs'" class="animate-fade-in">
                     <!-- TODO: Implement Inputs fields -->

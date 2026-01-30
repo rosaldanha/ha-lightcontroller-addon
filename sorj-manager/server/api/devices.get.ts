@@ -6,12 +6,16 @@ import yaml from "js-yaml";
 import { EsphomeConfig, ESPSCHEMA } from "~/utils/EsphomeConfig";
 
 export default defineEventHandler(async (event) => {
-    // TODO: The path should be '../config/esphome/'. Using 'docs/' for now as it exists.
-    // The final path will depend on the execution environment inside Home Assistant.
-    // 'process.cwd()' is likely '/home/ricardosaldanha/learn/ha-lightcontroller-addon/sorj-manager'
-    const configDir = path.resolve(process.cwd(), "..", "docs");
+    const configDir = process.env.ESPHOME_CONFIG_DIR;
     const configs: EsphomeConfig[] = [];
     const magicComment = "#light_controller_managed_config";
+
+    if (!configDir) {
+        console.warn(
+            "ESPHOME_CONFIG_DIR environment variable is not set. No configs will be loaded.",
+        );
+        return [];
+    }
 
     try {
         const files = fs.readdirSync(configDir);
@@ -26,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
             const filePath = path.join(configDir, file);
             const fileContent = fs.readFileSync(filePath, "utf-8");
-            const firstLine = fileContent.split("\\n")[0].trim();
+            const firstLine = fileContent.split("\n")[0].trim();
 
             if (firstLine === magicComment) {
                 try {
