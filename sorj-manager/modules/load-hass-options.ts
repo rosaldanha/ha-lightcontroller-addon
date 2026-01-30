@@ -19,11 +19,17 @@ export default defineNuxtModule({
                 // nós injetamos direto na configuração do Nuxt!
 
                 // 1. Atualiza runtimeConfig (Server-side)
-                nuxt.options.runtimeConfig = {
-                    ...nuxt.options.runtimeConfig,
-                    ...jsonOptions, // Injeta as chaves do JSON aqui
-                };
-
+                // nuxt.options.runtimeConfig = {
+                //     ...nuxt.options.runtimeConfig,
+                //     ...jsonOptions, // Injeta as chaves do JSON aqui
+                // };
+                for (const key in options) {
+                    const envKey = `NUXT_${key.toUpperCase()}`;
+                    // Só define se ainda não estiver definido (opcional, mas recomendado para não sobrescrever variáveis do sistema real)
+                    if (!process.env[envKey]) {
+                        process.env[envKey] = String(options[key]);
+                    }
+                }
                 // 2. Se quiser expor algo público, teria que filtrar ou definir explicitamente
                 // Exemplo: nuxt.options.runtimeConfig.public.teste = jsonOptions.teste
 
