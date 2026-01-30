@@ -31,6 +31,7 @@ ENV PORT=3000
 
 # Copia o output gerado no estágio anterior
 COPY --from=builder /app/.output /app/.output
+COPY env-loader.js /env-loader.js
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
