@@ -7,6 +7,11 @@ if [ -f /data/options.json ]; then
     eval "$(node /env-loader.js)"
 fi
 
+# --- DEBUG: Lista as variáveis carregadas ---
+    echo "🔍 Verificando variáveis NUXT_ definidas:"
+    env | grep NUXT_
+    echo "----------------------------------------"
+
 # Executa o comando original (CMD)
 exec "$@"
 
