@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { Icon } from "@iconify/vue";
 import EditDeviceModal from "./components/EditDeviceModal.vue";
+import { EsphomeConfig } from "./utils/EsphomeConfig";
 
 const showEditModal = ref(false);
-const deviceToEdit = ref(null);
+const deviceToEdit = ref(
+    new EsphomeConfig("teste", "00:00:00:00:00:00", "172.18.5.5", ""),
+);
 // Busca os dados da nossa API interna ao carregar a página
 const {
     data: devices,
@@ -14,7 +17,12 @@ const {
 
 const openEditModal = (device: any) => {
     console.log("Abrindo edição para:", device.name); // Debug no console
-    deviceToEdit.value = device;
+    deviceToEdit.value = new EsphomeConfig(
+        "teste",
+        "00:00:00:00:00:00",
+        "172.18.5.5",
+        "",
+    ); //TODO: fixthis
     showEditModal.value = true;
 };
 </script>
