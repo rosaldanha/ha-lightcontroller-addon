@@ -1,0 +1,37 @@
+#light_controller_managed_config
+substitutions:
+    device_name: "kinconya16_0101"
+    fixed_mac: "0E:FF:31:16:B1:53"
+    device_static_ip: "172.18.100.39"
+    pi1swstate: "sw_01_la"
+    po1device: "Luzes_Cozinha"
+    pi1device: "sw_01"
+
+packages:
+    base: !include packages/KINCONY-KC868-A16/base.yaml
+    po1: !include
+        file: packages/KINCONY-KC868-A16/light_kincony.yaml
+        vars:
+            po_name: "Luz Teste"
+            po_id: po1
+            po_hub_id: ${hub_out_1}
+            po_ph_id: 0
+            po_device: "Luzes_Cozinha"
+    po2: !include
+        file: packages/KINCONY-KC868-A16/switch_kincony.yaml
+        vars:
+            po_id: po2
+            po_name: Teste
+            po_icon: ""
+            po_device_class: ""
+
+esphome:
+    area: sotao
+
+    devices:
+        - id: Luzes_Cozinha
+          name: "Luzes Cozinha"
+          area_id: cozinha
+        - id: sw_01
+          name: "sw_01"
+          area_id: cozinha

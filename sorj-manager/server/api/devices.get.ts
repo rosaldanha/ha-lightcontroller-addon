@@ -1,47 +1,51 @@
 // server/api/devices.get.ts
-import { defineEventHandler, createError } from "h3";
+import { defineEventHandler } from "h3";
+import fs from "fs";
+import path from "path";
+import yaml from "js-yaml";
+import { EsphomeConfig, ESPSCHEMA } from "~/utils/EsphomeConfig";
 
 export default defineEventHandler(async (event) => {
-    // NÃO PRECISA MAIS DE IMPORTS DE CONFIG OU HTTPS!
-    // O objeto 'ha' já está disponível globalmente graças ao server/utils
-
-    // Lógica do Template (igual ao anterior)
-    const templateQuery = `
-    {% set result = namespace(devices=[]) %}
-    {% for state in states.sensor %}
-      {% if state.entity_id.endswith('_pid') %}
-         {% if state.state == 'sorj-net.lightcontroller' or state.state == 'unavailable' or state.state == 'unknown' %}
-            {% set dev_id = device_id(state.entity_id) %}
-            {% if dev_id %}
-                {% set name = device_attr(dev_id, 'name_by_user') or device_attr(dev_id, 'name') %}
-                {% set model = device_attr(dev_id, 'model') %}
-                {% set is_online = true %}
-                {% if state.state == 'unavailable' or state.state == 'unknown' %}
-                    {% set is_online = false %}
-                {% endif %}
-                {% set new_device = { 'id': dev_id, 'name': name, 'model': model, 'isOnline': is_online } %}
-                {% set result.devices = result.devices + [new_device] %}
-            {% endif %}
-         {% endif %}
-      {% endif %}
-    {% endfor %}
-    {{ result.devices | to_json }}
-  `;
+    // TODO: The path should be '../config/esphome/'. Using 'docs/' for now as it exists.
+    // The final path will depend on the execution environment inside Home Assistant.
+    // 'process.cwd()' is likely '/home/ricardosaldanha/learn/ha-lightcontroller-addon/sorj-manager'
+    const configDir = path.resolve(process.cwd(), "..", "docs");
+    const configs: EsphomeConfig[] = [];
+    const magicComment = "#light_controller_managed_config";
 
     try {
-        // OLHA COMO FICOU SIMPLES:
-        const data = await ha.runTemplate(templateQuery);
-        return data || [];
+        const files = fs.readdirSync(configDir);
+
+        for (const file of files) {
+            if (
+                path.extname(file) !== ".yaml" &&
+                path.extname(file) !== ".yml"
+            ) {
+                continue;
+            }
+
+            const filePath = path.join(configDir, file);
+            const fileContent = fs.readFileSync(filePath, "utf-8");
+            const firstLine = fileContent.split("\\n")[0].trim();
+
+            if (firstLine === magicComment) {
+                try {
+                    const data = yaml.load(fileContent, { schema: ESPSCHEMA });
+                    if (data && typeof data === "object") {
+                        const configInstance = EsphomeConfig.fromObject(data);
+                        configs.push(configInstance);
+                    }
+                } catch (e) {
+                    console.error(`Error parsing YAML file ${file}:`, e);
+                    // Optionally, decide if you want to throw an error or just skip the file
+                }
+            }
+        }
+        return configs;
     } catch (error) {
-        // Se falhar (ex: sem token local), retornamos mock
-        console.warn("Failed to fetch devices:", error.message);
-        throw createError({
-            statusCode: 502,
-            statusMessage: "Could not communicate with Home Assistant.",
-            data: {
-                originalError: error.message,
-                hint: "Check your SUPERVISOR_TOKEN or Home Assistant URL.",
-            },
-        });
+        console.error(`Failed to read config directory ${configDir}:`, error);
+        // If the directory doesn't exist or there's a reading error, return an empty array.
+        // This is more graceful for the frontend than throwing an error.
+        return [];
     }
 });

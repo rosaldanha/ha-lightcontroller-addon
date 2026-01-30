@@ -2,25 +2,22 @@
 import { ref } from "vue";
 import { Icon } from "@iconify/vue";
 import EditDeviceModal from "./components/EditDeviceModal.vue";
-import { EsphomeConfig } from "./utils/EsphomeConfig";
+import type { EsphomeConfig } from "./utils/EsphomeConfig";
 
 const showEditModal = ref(false);
 const deviceToEdit = ref<EsphomeConfig | null>(null);
 
-// Busca os dados da nossa API interna ao carregar a página
+// A API agora retorna um array de objetos EsphomeConfig
 const {
     data: devices,
     pending,
     error,
     refresh,
-} = await useFetch("api/devices");
+} = await useFetch<EsphomeConfig[]>("api/devices");
 
-const openEditModal = (device: any) => {
-    console.log("Abrindo edição para:", device.name); // Debug no console
-    // The API provides: { id, name, model, isOnline }
-    // EsphomeConfig constructor: (deviceName, mac, ip, deviceArea)
-    // We use the real name and placeholders for the rest.
-    deviceToEdit.value = new EsphomeConfig(device.name, "", "", "");
+const openEditModal = (device: EsphomeConfig) => {
+    console.log("Abrindo edição para:", device.substitutions.device_name);
+    deviceToEdit.value = device;
     showEditModal.value = true;
 };
 </script>
@@ -91,7 +88,7 @@ const openEditModal = (device: any) => {
             >
                 <DeviceCard
                     v-for="device in devices"
-                    :key="device.id"
+                    :key="device.substitutions.device_name"
                     :device="device"
                     @edit="openEditModal"
                 />
