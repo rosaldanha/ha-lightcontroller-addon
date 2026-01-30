@@ -117,7 +117,56 @@ const save = () => {
 
             <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
                 <div v-if="activeTab === 'base_config'" class="animate-fade-in">
-                    <!-- TODO: Implement Base Config fields -->
+                    <div v-if="formData" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="col-span-2 md:col-span-1">
+                                <label
+                                    class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider"
+                                    >Device name</label
+                                >
+                                <input
+                                    v-model="formData.substitutions.device_name"
+                                    type="text"
+                                    class="input-field"
+                                />
+                            </div>
+                            <div class="col-span-2 md:col-span-1">
+                                <label
+                                    class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider"
+                                    >Area</label
+                                >
+                                <input
+                                    v-model="formData.esphome.area"
+                                    type="text"
+                                    class="input-field"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider"
+                                    >Ip Address</label
+                                >
+                                <input
+                                    v-model="
+                                        formData.substitutions.device_static_ip
+                                    "
+                                    type="text"
+                                    class="input-field"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-wider"
+                                    >Mac address</label
+                                >
+                                <input
+                                    v-model="formData.substitutions.fixed_mac"
+                                    type="text"
+                                    class="input-field font-mono"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div
                     v-else-if="activeTab === 'sub_devices'"
