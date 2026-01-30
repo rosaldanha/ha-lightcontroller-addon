@@ -4,7 +4,9 @@ import fs from "node:fs";
 export default defineNitroPlugin((nitroApp) => {
     const config = useRuntimeConfig();
     const optionsPath = "/data/options.json";
-
+    console.log(
+        "Sincronizando configurações /data/options.json =>useRuntimeConfig ",
+    );
     try {
         if (fs.existsSync(optionsPath)) {
             const rawData = fs.readFileSync(optionsPath, "utf-8");
