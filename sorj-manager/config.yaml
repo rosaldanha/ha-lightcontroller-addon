@@ -1,5 +1,5 @@
 name: "Sorj-Net Controller Manager"
-version: "1.2.82"
+version: "1.2.83"
 homeassistant: "2026.1.1"
 slug: "sorj_net_manager"
 description: "Dashboard para gerenciar dispositivos sorj-net.lightcontroller, estilo ESPHome."
@@ -22,6 +22,6 @@ ingress_port: 3000
 map:
   - config:rw
 options:
-  esphomeConfigFolder: "../config/esphome"
+  NUXT_ESPHOME_CONFIG_FOLDER: "../config/esphome" # esphomeConfigFolder
 schema:
   esphomeConfigFolder: str

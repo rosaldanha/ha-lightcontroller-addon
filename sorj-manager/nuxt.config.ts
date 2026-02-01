@@ -18,7 +18,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     // Chaves aqui são PRIVADAS (disponíveis apenas em server/api)
-    esphomeConfigFolder: process.env.ESPHOMECONFIGFOLDER || "error",
+    esphomeConfigFolder: "error",
 
     // Se precisar no frontend (vue), coloque dentro de public:
     public: {
