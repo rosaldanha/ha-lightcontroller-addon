@@ -19,7 +19,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Chaves aqui são PRIVADAS (disponíveis apenas em server/api)
     esphomeConfigFolder: "error",
-
+    supervisorToken: "error",
+    supervisorUrl: "http://supervisor/core/api",
     // Se precisar no frontend (vue), coloque dentro de public:
     public: {
       // ...
