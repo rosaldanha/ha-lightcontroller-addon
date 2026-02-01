@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { Icon } from "@iconify/vue";
 import type { EsphomeConfig } from "~/utils/EsphomeConfig";
 
@@ -45,6 +45,11 @@ watch(
   },
   { immediate: true },
 );
+
+const subDeviceIds = computed(() => {
+  if (!formData.value?.esphome?.devices) return [];
+  return formData.value.esphome.devices.map((d) => d.id).filter(Boolean);
+});
 
 const validateSubDevices = () => {
   if (!formData.value?.esphome?.devices) return true;
@@ -334,8 +339,55 @@ const removeSubDevice = (index: number) => {
             </div>
           </div>
         </div>
-        <div v-else-if="activeTab === 'inputs'" class="animate-fade-in">
-          <!-- TODO: Implement Inputs fields -->
+        <div
+          v-else-if="activeTab === 'inputs' && formData"
+          class="animate-fade-in grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+        >
+          <div
+            v-for="i in 16"
+            :key="i"
+            class="bg-gray-800 border border-gray-700 rounded-lg p-4"
+          >
+            <h4 class="font-bold text-lg mb-3 text-gray-300">
+              Input pi{{ i }}
+            </h4>
+            <div class="space-y-4">
+              <div>
+                <label
+                  :for="`pi${i}device`"
+                  class="block text-xs font-medium text-gray-400 mb-1"
+                  >Sub-Device:</label
+                >
+                <select
+                  v-model="formData.substitutions[`pi${i}device`]"
+                  :id="`pi${i}device`"
+                  class="input-field"
+                >
+                  <option :value="undefined">None</option>
+                  <option
+                    v-for="subId in subDeviceIds"
+                    :key="subId"
+                    :value="subId"
+                  >
+                    {{ subId }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label
+                  :for="`pi${i}swstate`"
+                  class="block text-xs font-medium text-gray-400 mb-1"
+                  >Switch Label:</label
+                >
+                <input
+                  v-model="formData.substitutions[`pi${i}swstate`]"
+                  :id="`pi${i}swstate`"
+                  type="text"
+                  class="input-field"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         <div v-else-if="activeTab === 'outputs'" class="animate-fade-in">
           <!-- TODO: Implement Outputs fields -->
