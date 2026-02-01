@@ -22,17 +22,13 @@ export default defineEventHandler(async (event) => {
 
   try {
     const files = fs.readdirSync(configDir);
-
     for (const file of files) {
-      console.log(`reading file: ${file}`);
       if (path.extname(file) !== ".yaml" && path.extname(file) !== ".yml") {
         continue;
       }
-
       const filePath = path.join(configDir, file);
       const fileContent = fs.readFileSync(filePath, "utf-8");
       const firstLine = fileContent.split("\n")[0].trim();
-      console.log(firstLine);
       if (firstLine === magicComment) {
         try {
           const data = yaml.load(fileContent, { schema: ESPSCHEMA });
