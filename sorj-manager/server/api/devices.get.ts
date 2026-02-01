@@ -7,9 +7,9 @@ import { EsphomeConfig, ESPSCHEMA } from "~/utils/EsphomeConfig";
 import { useRuntimeConfig } from "#imports";
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
-  console.log(config);
-  const configDir = config.esphomeConfigFolder; // process.env.ESPHOME_CONFIG_DIR;
-  console.log(configDir);
+  //console.log(config);
+  const configDir = config.esphomeConfigFolder;
+  //console.log(configDir);
   const configs: EsphomeConfig[] = [];
   const magicComment = "#light_controller_managed_config";
 

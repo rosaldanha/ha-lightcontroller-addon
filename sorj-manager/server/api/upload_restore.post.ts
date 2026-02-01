@@ -1,11 +1,13 @@
 // server/api/upload_restore.post.ts
 import { defineEventHandler, readMultipartFormData, createError } from "h3";
+import { useRuntimeConfig } from "#imports";
 import JSZip from "jszip";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 export default defineEventHandler(async (event) => {
   // 1. Ler o arquivo enviado (Multipart Form Data)
+  const config = useRuntimeConfig();
   const parts = await readMultipartFormData(event);
 
   if (!parts || parts.length === 0) {
@@ -33,7 +35,7 @@ export default defineEventHandler(async (event) => {
         // Define o caminho seguro.
         // Nota: Aqui confiamos no nome do arquivo dentro do zip.
         // Se quiser forçar o nome do dispositivo atual, precisaria passar o nome no formData.
-        const filePath = path.join("/config/esphome", filename);
+        const filePath = path.join(config.esphomeConfigFolder, filename);
 
         // Salva no disco
         await fs.writeFile(filePath, content, "utf-8");

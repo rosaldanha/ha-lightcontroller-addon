@@ -9,11 +9,14 @@ import JSZip from "jszip";
 import fs from "node:fs/promises";
 import { promisify } from "node:util";
 import { exec } from "node:child_process";
+import { useRuntimeConfig } from "#imports";
+import path from "path";
 // Promisify transforma o 'exec' (baseado em callback) em uma Promise
 // para podermos usar async/await de forma limpa.
 const execAsync = promisify(exec);
 
 export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig();
   const body = await readBody(event);
   const deviceName = body.deviceName;
 
@@ -77,7 +80,11 @@ export default defineEventHandler(async (event) => {
     // Caminho padrão onde o Add-on ESPHome salva os arquivos
     // O mapeamento 'map: - config:rw' no config.yaml permite acessar isso.
 
-    const yamlPath = `../config/esphome/${safeDeviceName}.yaml`;
+    //const yamlPath = `../config/esphome/${safeDeviceName}.yaml`;
+    const yamlPath = path.join(
+      config.esphomeConfigFolder,
+      `${safeDeviceName}.yaml`,
+    );
 
     // Tenta ler o arquivo
     const yamlContent = await fs.readFile(yamlPath, "utf-8");

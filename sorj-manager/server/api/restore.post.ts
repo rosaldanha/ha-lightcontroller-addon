@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   try {
     // Chama o serviço do Home Assistant para definir o valor
     // Domínio: text, Serviço: set_value
-    await ha.request("/api/services/text/set_value", {
+    await ha.request("api/services/text/set_value", {
       method: "POST",
       body: {
         entity_id: entity_id,
