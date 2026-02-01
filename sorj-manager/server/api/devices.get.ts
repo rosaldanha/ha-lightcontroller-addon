@@ -6,53 +6,51 @@ import yaml from "js-yaml";
 import { EsphomeConfig, ESPSCHEMA } from "~/utils/EsphomeConfig";
 import { useRuntimeConfig } from "#imports";
 export default defineEventHandler(async (event) => {
-    const config = useRuntimeConfig();
-    console.log(config);
-    const configDir = config.esphomeConfigFolder; // process.env.ESPHOME_CONFIG_DIR;
-    console.log(configDir);
-    const configs: EsphomeConfig[] = [];
-    const magicComment = "#light_controller_managed_config";
+  const config = useRuntimeConfig();
+  console.log(config);
+  const configDir = config.esphomeConfigFolder; // process.env.ESPHOME_CONFIG_DIR;
+  console.log(configDir);
+  const configs: EsphomeConfig[] = [];
+  const magicComment = "#light_controller_managed_config";
 
-    if (!configDir) {
-        console.warn(
-            "ESPHOME_CONFIG_DIR environment variable is not set. No configs will be loaded.",
-        );
-        return [];
-    }
+  if (!configDir) {
+    console.warn(
+      "ESPHOME_CONFIG_DIR environment variable is not set. No configs will be loaded.",
+    );
+    return [];
+  }
 
-    try {
-        const files = fs.readdirSync(configDir);
+  try {
+    const files = fs.readdirSync(configDir);
 
-        for (const file of files) {
-            if (
-                path.extname(file) !== ".yaml" &&
-                path.extname(file) !== ".yml"
-            ) {
-                continue;
-            }
+    for (const file of files) {
+      console.log(`reading file: ${file}`);
+      if (path.extname(file) !== ".yaml" && path.extname(file) !== ".yml") {
+        continue;
+      }
 
-            const filePath = path.join(configDir, file);
-            const fileContent = fs.readFileSync(filePath, "utf-8");
-            const firstLine = fileContent.split("\n")[0].trim();
+      const filePath = path.join(configDir, file);
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      const firstLine = fileContent.split("\n")[0].trim();
 
-            if (firstLine === magicComment) {
-                try {
-                    const data = yaml.load(fileContent, { schema: ESPSCHEMA });
-                    if (data && typeof data === "object") {
-                        const configInstance = EsphomeConfig.fromObject(data);
-                        configs.push(configInstance);
-                    }
-                } catch (e) {
-                    console.error(`Error parsing YAML file ${file}:`, e);
-                    // Optionally, decide if you want to throw an error or just skip the file
-                }
-            }
+      if (firstLine === magicComment) {
+        try {
+          const data = yaml.load(fileContent, { schema: ESPSCHEMA });
+          if (data && typeof data === "object") {
+            const configInstance = EsphomeConfig.fromObject(data);
+            configs.push(configInstance);
+          }
+        } catch (e) {
+          console.error(`Error parsing YAML file ${file}:`, e);
+          // Optionally, decide if you want to throw an error or just skip the file
         }
-        return configs;
-    } catch (error) {
-        console.error(`Failed to read config directory ${configDir}:`, error);
-        // If the directory doesn't exist or there's a reading error, return an empty array.
-        // This is more graceful for the frontend than throwing an error.
-        return [];
+      }
     }
+    return configs;
+  } catch (error) {
+    console.error(`Failed to read config directory ${configDir}:`, error);
+    // If the directory doesn't exist or there's a reading error, return an empty array.
+    // This is more graceful for the frontend than throwing an error.
+    return [];
+  }
 });
