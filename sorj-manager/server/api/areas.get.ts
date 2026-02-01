@@ -3,7 +3,7 @@ import { useRuntimeConfig } from "#imports";
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
-  const supervisorUrl = config.runtimeConfig.supervisorUrl;
+  const supervisorUrl = config.supervisorUrl;
   console.log(supervisorUrl);
   const supervisorToken = process.env.SUPERVISOR_TOKEN;
 
