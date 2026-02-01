@@ -5,7 +5,8 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const supervisorUrl = config.supervisorUrl;
   console.log(supervisorUrl);
-  const supervisorToken = process.env.SUPERVISOR_TOKEN;
+  const supervisorToken = config.supervisorToken;
+  console.log(supervisorToken); //TODO:Remove this after test
 
   if (!supervisorToken) {
     throw new Error("SUPERVISOR_TOKEN is not defined");
