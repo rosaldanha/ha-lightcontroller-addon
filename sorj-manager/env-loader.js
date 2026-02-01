@@ -25,7 +25,7 @@ try {
       const safeValue = value.replace(/'/g, "'\\''");
 
       // 5. Imprime o comando de export
-      console.log(`export ${envName}='${safeValue}'`);
+      console.log(`export ${key}='${safeValue}'`);
     });
   }
 } catch (error) {

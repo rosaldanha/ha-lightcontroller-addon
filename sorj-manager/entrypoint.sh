@@ -13,7 +13,7 @@ fi
     echo "----------------------------------------"
 
 # Executa o comando original (CMD)
-exec "$@"
+#exec "$@"
 
 # Executa o comando original do container (CMD)
 exec "$@"
