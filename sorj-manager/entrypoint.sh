@@ -10,6 +10,7 @@ fi
 # --- DEBUG: Lista as variáveis carregadas ---
     echo "🔍 Verificando variáveis NUXT_ definidas:"
     env | grep NUXT_
+    env
     echo "----------------------------------------"
 
 # Executa o comando original (CMD)
