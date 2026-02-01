@@ -10,10 +10,11 @@ fi
 # --- DEBUG: Lista as variáveis carregadas ---
     echo "🔍 Verificando variáveis NUXT_ definidas:"
     env | grep ESPHOME
+    env
     echo "----------------------------------------"
 
 # Executa o comando original (CMD)
-#exec "$@"
+exec "$@"
 
 # Executa o comando original do container (CMD)
 exec "$@"
