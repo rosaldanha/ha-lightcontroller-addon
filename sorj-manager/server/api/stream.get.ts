@@ -52,6 +52,15 @@ export default defineEventHandler(async (event: H3Event) => {
           }),
         );
       }
+      if (msg.type === "auth_ok") {
+        haSocket.send(
+          JSON.stringify({
+            id: 1,
+            type: "subscribe_events",
+            event_type: "state_changed",
+          }),
+        );
+      }
       // Verifica se é um evento de mudança de estado
       if (msg.type === "event" && msg.event.event_type === "state_changed") {
         const entityId = msg.event.data.entity_id;
