@@ -37,6 +37,7 @@ const connectToHA = async (entityIds: string[]) => {
       socket.value?.send(
         JSON.stringify({ type: "auth", access_token: haToken }),
       );
+      alert(JSON.stringify({ type: "auth", access_token: haToken }));
     } else if (message.type === "auth_ok") {
       // 1. Get initial states
       socket.value?.send(
