@@ -37,6 +37,7 @@ Desktop.ini
 
 # Zed Editor
 .zed
+upd.sh
 
 # Bun (Opcional: Geralmente se commita o lockb, mas se der conflito entre OS remova o # abaixo)
 # bun.lockb
