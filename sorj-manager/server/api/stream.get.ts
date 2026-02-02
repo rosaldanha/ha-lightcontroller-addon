@@ -70,6 +70,7 @@ export default defineEventHandler(async (event: H3Event) => {
           await eventStream.push("Hello world");
         }, 10);
         console.log(eventStream);
+        return eventStream.send();
         event._handled = true;
       }
       // Verifica se é um evento de mudança de estado
@@ -84,7 +85,6 @@ export default defineEventHandler(async (event: H3Event) => {
           const chunk = `data: ${JSON.stringify({ entity_id: entityId, state: newState })}\n\n`;
           console.log(chunk);
           //event.node.res.write(chunk);
-          return eventStream.send();
         }
       }
     } catch (e) {
