@@ -23,7 +23,7 @@ export default defineEventHandler(async (event: H3Event) => {
   // 2. Conectar ao WebSocket do Supervisor (lado do servidor)
   const haSocket = new WebSocket(wsUrl);
   console.log("conectado");
-
+  console.log(WATCH_LIST);
   // 3. Quando conectar, pedir para assinar eventos de mudança de estado
   // haSocket.on("open", () => {
   //   // ID deve ser incremental, mas para este exemplo simples fixamos em 1
@@ -42,7 +42,7 @@ export default defineEventHandler(async (event: H3Event) => {
     try {
       count += 1;
       const msg = JSON.parse(data.toString());
-      console.log(msg);
+      //console.log(msg);
       if (msg.type === "auth_required") {
         haSocket.send(
           JSON.stringify({
