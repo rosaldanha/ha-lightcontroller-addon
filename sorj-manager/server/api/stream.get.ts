@@ -6,9 +6,10 @@ import { getMonitoredEntities } from "../utils/getMonitoredEntities";
 
 export default defineEventHandler(async (event: H3Event) => {
   // 1. Configurar cabeçalhos para SSE (Server-Sent Events)
-  setHeader(event, "Content-Type", "text/event-stream");
-  setHeader(event, "Cache-Control", "no-cache");
-  setHeader(event, "Connection", "keep-alive");
+  setHeader(event, "content-Type", "text/event-stream");
+  setHeader(event, "cache-Control", "no-cache");
+  setHeader(event, "connection", "keep-alive");
+  setResponseStatus(event, 200);
   const config = useRuntimeConfig();
   // Lista de entidades que você quer monitorar
   const WATCH_LIST = await getMonitoredEntities();
@@ -61,9 +62,14 @@ export default defineEventHandler(async (event: H3Event) => {
           }),
         );
         console.log("SENT event.node.res");
-        event.node.res.write(
-          `data: ${JSON.stringify({ data: "Connected" })}\n\n`,
-        );
+        const sendEvent = (data: any) => {
+          event.node.res.write(`id: ${++count}\n`);
+          event.node.res.write(
+            `data: ${JSON.stringify({ data2: "Connected" })}\n\n`,
+          );
+        };
+        myHooks.hook("sse:event", sendEvent);
+        event._handled = true;
       }
       // Verifica se é um evento de mudança de estado
       if (msg.type === "event" && msg.event.event_type === "state_changed") {

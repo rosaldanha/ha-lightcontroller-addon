@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onUnmounted } from "vue";
 import { Icon } from "@iconify/vue";
+import { myHooks } from "../server/utils/hooks";
 
 const props = defineProps<{
   show: boolean;
