@@ -14,12 +14,14 @@ export default defineEventHandler(async (event: H3Event) => {
   console.log(WATCH_LIST);
 
   const token = config.supervisorToken;
-  const wsUrl = "ws://supervisor/core/websocket";
 
+  const wsUrl = "ws://supervisor/core/websocket";
+  console.log(`Conectando com token ${token}`);
   // 2. Conectar ao WebSocket do Supervisor (lado do servidor)
   const haSocket = new WebSocket(wsUrl, {
     headers: { Authorization: `Bearer ${token}` },
   });
+  console.log("conectado");
 
   // 3. Quando conectar, pedir para assinar eventos de mudança de estado
   haSocket.on("open", () => {
@@ -37,7 +39,7 @@ export default defineEventHandler(async (event: H3Event) => {
   haSocket.on("message", (data) => {
     try {
       const msg = JSON.parse(data.toString());
-
+      console.log(msg);
       // Verifica se é um evento de mudança de estado
       if (msg.type === "event" && msg.event.event_type === "state_changed") {
         const entityId = msg.event.data.entity_id;
