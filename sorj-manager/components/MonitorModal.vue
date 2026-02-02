@@ -17,10 +17,10 @@ const connectToStream = () => {
 
   eventSource.value.onmessage = (event) => {
     console.log(event);
-    const data = JSON.parse(event.data);
+    //const data = JSON.parse(event.data);
 
-    const logEntry = `[${new Date().toLocaleTimeString()}] Entity: ${data.entity_id}, New State: ${data.state}`;
-    eventLog.value.push(logEntry);
+    //const logEntry = `[${new Date().toLocaleTimeString()}] Entity: ${data.entity_id}, New State: ${data.state}`;
+    eventLog.value.push(event);
   };
 
   eventSource.value.onerror = (err) => {
