@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onUnmounted } from "vue";
 import { Icon } from "@iconify/vue";
-import { useEventSource } from "@vueuse/core";
+
 const props = defineProps<{
   show: boolean;
 }>();
@@ -9,49 +9,105 @@ const props = defineProps<{
 defineEmits(["close"]);
 
 const eventLog = ref<string[]>([]);
-const eventSource = ref<useEventSource | null>(null);
+const socket = ref<WebSocket | null>(null);
+const loading = ref(false);
+const error = ref<string | null>(null);
+let messageId = 1;
 
-const connectToStream = () => {
-  eventLog.value = []; // Clear log on new connection
-  eventSource.value = new useEventSource("api/stream");
+const connectToHA = async () => {
+  loading.value = true;
+  error.value = null;
+  eventLog.value = [];
 
-  eventSource.value.onmessage = (event) => {
-    alert(event);
-    // console.warn(event);
-    // eventLog.value.push(event);
-    // try {
-    //   const data = JSON.parse(event.data);
-    //   let logEntry = `[${new Date().toLocaleTimeString()}] `;
+  try {
+    // 1. Fetch entities to watch
+    const response = await fetch("api / monitor - entities");
+    if (!response.ok) {
+      throw new Error("Failed to fetch entities to monitor.");
+    }
+    const WATCH_LIST = await response.json();
 
-    //   if (data.data && data.data === "Connected") {
-    //     logEntry += "Stream connected successfully.";
-    //   } else if (data.entity_id && data.state) {
-    //     logEntry += `Entity: ${data.entity_id}, New State: ${data.state.state}`;
-    //   } else {
-    //     logEntry += `Received unhandled message: ${event.data}`;
-    //   }
-    //   eventLog.value.push(logEntry);
-    // } catch (e) {
-    //   console.error("Error parsing SSE data:", e);
-    //   eventLog.value.push(
-    //     `[${new Date().toLocaleTimeString()}] Received invalid data: ${event.data}`,
-    //   );
-    // }
-  };
+    if (!WATCH_LIST || WATCH_LIST.length === 0) {
+      eventLog.value.push("No entities found to monitor.");
+      loading.value = false;
+      return;
+    }
+    eventLog.value.push(`Monitoring ${WATCH_LIST.length} entities...`);
 
-  eventSource.value.onerror = (err) => {
-    console.error("EventSource failed:", err);
-    eventLog.value.push(
-      `[${new Date().toLocaleTimeString()}] Error connecting to stream.`,
-    );
-    eventSource.value?.close();
-  };
+    // 2. Get token and URL from runtime config
+    const config = useRuntimeConfig();
+    const token = config.public.supervisorToken;
+    const wsUrl = "ws://hass.sal.net.br/api/websocket";
+
+    if (!token) {
+      throw new Error(
+        "Supervisor token is not available in public runtime config.",
+      );
+    }
+
+    // 3. Connect WebSocket
+    socket.value = new WebSocket(wsUrl);
+
+    // 4. Handle WebSocket messages
+    socket.value.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === "auth_required") {
+        socket.value?.send(
+          JSON.stringify({
+            type: "auth",
+            access_token: token,
+          }),
+        );
+      } else if (msg.type === "auth_ok") {
+        eventLog.value.push(
+          "Authentication successful. Subscribing to events...",
+        );
+        socket.value?.send(
+          JSON.stringify({
+            id: messageId++,
+            type: "subscribe_events",
+            event_type: "state_changed",
+          }),
+        );
+      } else if (
+        msg.type === "event" &&
+        msg.event.event_type === "state_changed"
+      ) {
+        const entityId = msg.event.data.entity_id;
+        const newState = msg.event.data.new_state;
+        if (WATCH_LIST.includes(entityId)) {
+          const logEntry = `[${new Date().toLocaleTimeString()}] Entity: ${entityId}, New State: ${newState.state}`;
+          eventLog.value.push(logEntry);
+        }
+      }
+    };
+
+    socket.value.onopen = () => {
+      eventLog.value.push(
+        "WebSocket connection opened, waiting for authentication...",
+      );
+    };
+
+    socket.value.onerror = (err) => {
+      console.error("WebSocket Error:", err);
+      error.value = "Failed to connect to Home Assistant WebSocket.";
+    };
+
+    socket.value.onclose = () => {
+      eventLog.value.push("WebSocket connection closed.");
+    };
+  } catch (e: any) {
+    error.value = e.message;
+  } finally {
+    loading.value = false;
+  }
 };
 
-const disconnectFromStream = () => {
-  if (eventSource.value) {
-    eventSource.value.close();
-    eventSource.value = null;
+const disconnectFromHA = () => {
+  if (socket.value) {
+    socket.value.close();
+    socket.value = null;
   }
 };
 
@@ -59,15 +115,15 @@ watch(
   () => props.show,
   (newShow) => {
     if (newShow) {
-      connectToStream();
+      connectToHA();
     } else {
-      disconnectFromStream();
+      disconnectFromHA();
     }
   },
 );
 
 onUnmounted(() => {
-  disconnectFromStream();
+  disconnectFromHA();
 });
 </script>
 
