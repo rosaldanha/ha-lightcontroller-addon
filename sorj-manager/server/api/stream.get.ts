@@ -1,6 +1,7 @@
 // server/api/stream.get.ts
 import WebSocket from "ws";
 import { H3Event } from "h3";
+import { createApp, eventHandler, createEventStream } from "h3";
 import { useRuntimeConfig } from "#imports";
 import { getMonitoredEntities } from "../utils/getMonitoredEntities";
 
@@ -10,6 +11,8 @@ export default defineEventHandler(async (event: H3Event) => {
   setHeader(event, "cache-Control", "no-cache");
   setHeader(event, "connection", "keep-alive");
   setResponseStatus(event, 200);
+
+  const eventStream = createEventStream(event);
   const config = useRuntimeConfig();
   // Lista de entidades que você quer monitorar
   const WATCH_LIST = await getMonitoredEntities();
@@ -62,13 +65,7 @@ export default defineEventHandler(async (event: H3Event) => {
           }),
         );
         console.log("SENT event.node.res");
-        const sendEvent = (data: any) => {
-          event.node.res.write(`id: ${++counter}\n`);
-          event.node.res.write(
-            `data: ${JSON.stringify({ data2: "Connected" })}\n\n`,
-          );
-        };
-        myHooks.hook("sse:event", sendEvent);
+        eventStream.push("Hello world");
         event._handled = true;
       }
       // Verifica se é um evento de mudança de estado
