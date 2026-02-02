@@ -2,7 +2,7 @@
 import WebSocket from "ws";
 import { H3Event } from "h3";
 import { useRuntimeConfig } from "#imports";
-
+import { get_monitored_entities } from "#imports";
 export default defineEventHandler(async (event: H3Event) => {
   // 1. Configurar cabeçalhos para SSE (Server-Sent Events)
   setHeader(event, "Content-Type", "text/event-stream");
