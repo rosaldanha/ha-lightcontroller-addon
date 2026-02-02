@@ -65,7 +65,11 @@ export default defineEventHandler(async (event: H3Event) => {
           }),
         );
         console.log("SENT event.node.res");
-        eventStream.push("Hello world");
+        //eventStream.push("Hello world");
+        const interval = setInterval(async () => {
+          await eventStream.push("Hello world");
+        }, 10);
+
         console.log(eventStream);
         event._handled = true;
       }
