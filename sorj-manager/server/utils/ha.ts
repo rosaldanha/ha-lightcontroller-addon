@@ -50,7 +50,7 @@ class HomeAssistantClient {
 
   async runTemplate(template: string): Promise<any> {
     try {
-      const response = await this.request<string | object>("/api/template", {
+      const response = await this.request<string | object>("/template", {
         method: "POST",
         body: { template },
       });
