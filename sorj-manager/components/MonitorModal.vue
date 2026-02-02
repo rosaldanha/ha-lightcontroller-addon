@@ -8,122 +8,48 @@ const props = defineProps<{
 
 defineEmits(["close"]);
 
-const entityStates = ref<{ [key: string]: any }>({});
-const loading = ref(false);
-const error = ref<string | null>(null);
-const socket = ref<WebSocket | null>(null);
-let messageId = 1;
+const eventLog = ref<string[]>([]);
+const eventSource = ref<EventSource | null>(null);
 
-const connectToHA = async (entityIds: string[]) => {
-  const runtimeConfig = useRuntimeConfig();
-  // @ts-ignore
-  const haUrl = runtimeConfig.public.haUrl || window.location.host;
-  // @ts-ignore
-  const haToken = runtimeConfig.public.supervisorToken;
+const connectToStream = () => {
+  eventLog.value = []; // Clear log on new connection
+  eventSource.value = new EventSource("api/stream.get");
 
-  if (!haToken) {
-    error.value = "Home Assistant token is not configured.";
-    return;
-  }
-
-  const wsUrl = `wss://${haUrl}/api/websocket`;
-  socket.value = new WebSocket(wsUrl);
-
-  socket.value.onmessage = (event) => {
-    const message = JSON.parse(event.data);
-    alert(event.data);
-
-    if (message.type === "auth_required") {
-      socket.value?.send(
-        JSON.stringify({ type: "auth", access_token: haToken }),
-      );
-      alert(JSON.stringify({ type: "auth", access_token: haToken }));
-    } else if (message.type === "auth_ok") {
-      // 1. Get initial states
-      socket.value?.send(
-        JSON.stringify({ id: messageId++, type: "get_states" }),
-      );
-      // 2. Subscribe to future changes
-      socket.value?.send(
-        JSON.stringify({
-          id: messageId++,
-          type: "subscribe_events",
-          event_type: "state_changed",
-        }),
-      );
-    } else if (message.id === messageId - 2 && message.type === "result") {
-      // Corresponds to get_states
-      if (message.success) {
-        for (const entity of message.result) {
-          if (entityIds.includes(entity.entity_id)) {
-            entityStates.value[entity.entity_id] = entity;
-          }
-        }
-      }
-    } else if (message.type === "event") {
-      const eventData = message.event;
-      if (
-        eventData.event_type === "state_changed" &&
-        entityIds.includes(eventData.data.entity_id)
-      ) {
-        entityStates.value[eventData.data.entity_id] = eventData.data.new_state;
-      }
-    }
+  eventSource.value.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    const logEntry = `[${new Date().toLocaleTimeString()}] Entity: ${data.entity_id}, New State: ${data.state}`;
+    eventLog.value.push(logEntry);
   };
 
-  socket.value.onopen = () => {
-    console.log("WebSocket connection opened.");
-  };
-
-  socket.value.onerror = (err) => {
-    console.error("WebSocket Error:", err);
-    error.value = "Failed to connect to Home Assistant WebSocket.";
-  };
-
-  socket.value.onclose = () => {
-    console.log("WebSocket connection closed.");
+  eventSource.value.onerror = (err) => {
+    console.error("EventSource failed:", err);
+    eventLog.value.push(
+      `[${new Date().toLocaleTimeString()}] Error connecting to stream.`,
+    );
+    eventSource.value?.close();
   };
 };
 
-const disconnectFromHA = () => {
-  if (socket.value) {
-    socket.value.close();
-    socket.value = null;
+const disconnectFromStream = () => {
+  if (eventSource.value) {
+    eventSource.value.close();
+    eventSource.value = null;
   }
 };
 
 watch(
   () => props.show,
-  async (newShow) => {
+  (newShow) => {
     if (newShow) {
-      loading.value = true;
-      error.value = null;
-      entityStates.value = {};
-      try {
-        const response = await fetch("api/monitor-entities");
-        if (!response.ok) {
-          throw new Error("Failed to fetch entities");
-        }
-        const entityIds = await response.json();
-        if (entityIds.length > 0) {
-          entityIds.forEach((id: string) => {
-            entityStates.value[id] = { state: "loading..." };
-          });
-          connectToHA(entityIds);
-        }
-      } catch (e: any) {
-        error.value = e.message;
-      } finally {
-        loading.value = false;
-      }
+      connectToStream();
     } else {
-      disconnectFromHA();
+      disconnectFromStream();
     }
   },
 );
 
 onUnmounted(() => {
-  disconnectFromHA();
+  disconnectFromStream();
 });
 </script>
 
@@ -140,7 +66,7 @@ onUnmounted(() => {
       >
         <h3 class="text-xl font-semibold text-white flex items-center">
           <Icon icon="mdi:monitor-dashboard" class="mr-2 text-esphome-accent" />
-          Monitor
+          Monitor Stream
         </h3>
         <button @click="$emit('close')" class="text-gray-400 hover:text-white">
           <Icon icon="mdi:close" class="text-2xl" />
@@ -149,49 +75,13 @@ onUnmounted(() => {
 
       <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
         <div class="animate-fade-in">
-          <div v-if="loading" class="text-center text-gray-400">
-            <Icon icon="mdi:loading" class="animate-spin text-4xl mr-3" />
-            Loading entities...
-          </div>
           <div
-            v-else-if="error"
-            class="text-red-400 text-center p-4 bg-red-900/50 rounded-lg"
+            class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 h-full"
           >
-            Error: {{ error }}
-          </div>
-          <div
-            v-else-if="Object.keys(entityStates).length === 0"
-            class="text-center text-gray-500"
-          >
-            No entities found to monitor.
-          </div>
-          <div
-            v-else
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
-            <div
-              v-for="(entity, entityId) in entityStates"
-              :key="entityId"
-              class="bg-gray-800 p-4 rounded-lg border-l-4"
-              :class="
-                entity.state === 'on' ? 'border-amber-400' : 'border-gray-600'
-              "
+            <pre
+              class="text-sm text-gray-300 font-mono whitespace-pre-wrap h-full overflow-y-auto custom-scrollbar"
+              >{{ eventLog.join("\n") }}</pre
             >
-              <div class="flex justify-between items-center">
-                <span class="font-mono text-sm text-gray-300">{{
-                  entityId
-                }}</span>
-                <span
-                  class="text-sm font-bold uppercase px-2 py-1 rounded"
-                  :class="
-                    entity.state === 'on'
-                      ? 'bg-amber-400 text-black'
-                      : 'bg-gray-700 text-gray-300'
-                  "
-                  >{{ entity.state }}</span
-                >
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -213,6 +103,7 @@ onUnmounted(() => {
 <style scoped>
 .animate-fade-in {
   animation: fadeIn 0.2s ease-in-out;
+  height: 100%;
 }
 @keyframes fadeIn {
   from {
