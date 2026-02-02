@@ -14,16 +14,14 @@ export default defineEventHandler(async (event: H3Event) => {
   const WATCH_LIST = await getMonitoredEntities();
   console.log(WATCH_LIST);
 
-  //  const token = config.supervisorToken;
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjYjBiMmZhNjcyMmQ0YjdiOWE1ZjM4NjgwOTc3YmRkMiIsImlhdCI6MTc3MDAyOTU4NCwiZXhwIjoyMDg1Mzg5NTg0fQ.LqkZG85reW-uDICWw9XKaOlTzD1oUvXozZS-tulY5mA";
+  const token = config.supervisorToken;
+  //const token =
+  // "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjYjBiMmZhNjcyMmQ0YjdiOWE1ZjM4NjgwOTc3YmRkMiIsImlhdCI6MTc3MDAyOTU4NCwiZXhwIjoyMDg1Mzg5NTg0fQ.LqkZG85reW-uDICWw9XKaOlTzD1oUvXozZS-tulY5mA";
 
   const wsUrl = "ws://supervisor/core/websocket";
   console.log(`Conectando com token`);
   // 2. Conectar ao WebSocket do Supervisor (lado do servidor)
-  const haSocket = new WebSocket(wsUrl, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const haSocket = new WebSocket(wsUrl);
   console.log("conectado");
 
   // 3. Quando conectar, pedir para assinar eventos de mudança de estado
@@ -39,14 +37,16 @@ export default defineEventHandler(async (event: H3Event) => {
   // });
 
   // 4. Quando receber dados do HA, filtrar e enviar para o navegador
+  let count: number = 0;
   haSocket.on("message", (data: any) => {
     try {
+      count += 1;
       const msg = JSON.parse(data.toString());
       console.log(msg);
       if (msg.type === "auth_required") {
         haSocket.send(
           JSON.stringify({
-            id: 10,
+            id: count,
             type: "auth",
             access_token: token,
           }),
