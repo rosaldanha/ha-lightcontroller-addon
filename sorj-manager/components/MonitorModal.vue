@@ -31,6 +31,7 @@ const connectToHA = async (entityIds: string[]) => {
 
   socket.value.onmessage = (event) => {
     const message = JSON.parse(event.data);
+    alert(event.data);
 
     if (message.type === "auth_required") {
       socket.value?.send(
