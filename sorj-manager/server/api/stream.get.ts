@@ -11,7 +11,7 @@ export default defineEventHandler(async (event: H3Event) => {
   setHeader(event, "Connection", "keep-alive");
   const config = useRuntimeConfig();
   // Lista de entidades que você quer monitorar
-  const WATCH_LIST = getMonitoredEntities();
+  const WATCH_LIST = await getMonitoredEntities();
   console.log(WATCH_LIST);
 
   const token = config.supervisorToken;

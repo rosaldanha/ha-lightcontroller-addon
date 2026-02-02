@@ -7,7 +7,7 @@ import { EsphomeConfig, ESPSCHEMA } from "~/utils/EsphomeConfig";
 import { ha } from "~/server/utils/ha";
 import { useRuntimeConfig } from "#imports";
 
-export const getMonitoredEntities = (): string[] => {
+export const getMonitoredEntities = async (): Promise<string[]> => {
   const config = useRuntimeConfig();
   const configDir = config.esphomeConfigFolder;
   const deviceNames: string[] = [];
