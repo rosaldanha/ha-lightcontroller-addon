@@ -90,9 +90,8 @@ export default defineEventHandler(async (event: H3Event) => {
     event.node.res.end();
   });
 
-  // Mantém a conexão aberta retornando uma promessa que nunca resolve
   // (ou até o cliente desconectar)
-  return new Promise(() => {
-    /* wait forever */
-  });
+  // return new Promise(() => {
+  //   /* wait forever */
+  // });
 });
