@@ -17,24 +17,26 @@ const connectToStream = () => {
   eventSource.value = new EventSource("api/stream");
 
   eventSource.value.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      let logEntry = `[${new Date().toLocaleTimeString()}] `;
+    console.warn(event);
+    eventLog.value.push(event);
+    // try {
+    //   const data = JSON.parse(event.data);
+    //   let logEntry = `[${new Date().toLocaleTimeString()}] `;
 
-      if (data.data && data.data === "Connected") {
-        logEntry += "Stream connected successfully.";
-      } else if (data.entity_id && data.state) {
-        logEntry += `Entity: ${data.entity_id}, New State: ${data.state.state}`;
-      } else {
-        logEntry += `Received unhandled message: ${event.data}`;
-      }
-      eventLog.value.push(logEntry);
-    } catch (e) {
-      console.error("Error parsing SSE data:", e);
-      eventLog.value.push(
-        `[${new Date().toLocaleTimeString()}] Received invalid data: ${event.data}`,
-      );
-    }
+    //   if (data.data && data.data === "Connected") {
+    //     logEntry += "Stream connected successfully.";
+    //   } else if (data.entity_id && data.state) {
+    //     logEntry += `Entity: ${data.entity_id}, New State: ${data.state.state}`;
+    //   } else {
+    //     logEntry += `Received unhandled message: ${event.data}`;
+    //   }
+    //   eventLog.value.push(logEntry);
+    // } catch (e) {
+    //   console.error("Error parsing SSE data:", e);
+    //   eventLog.value.push(
+    //     `[${new Date().toLocaleTimeString()}] Received invalid data: ${event.data}`,
+    //   );
+    // }
   };
 
   eventSource.value.onerror = (err) => {

@@ -66,6 +66,7 @@ export default defineEventHandler(async (event: H3Event) => {
         );
         console.log("SENT event.node.res");
         eventStream.push("Hello world");
+        console.log(eventStream);
         event._handled = true;
       }
       // Verifica se é um evento de mudança de estado
