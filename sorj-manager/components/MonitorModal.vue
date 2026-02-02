@@ -16,8 +16,9 @@ const connectToStream = () => {
   eventSource.value = new EventSource("api/stream");
 
   eventSource.value.onmessage = (event) => {
+    console.log(event);
     const data = JSON.parse(event.data);
-    console.log(data);
+
     const logEntry = `[${new Date().toLocaleTimeString()}] Entity: ${data.entity_id}, New State: ${data.state}`;
     eventLog.value.push(logEntry);
   };
