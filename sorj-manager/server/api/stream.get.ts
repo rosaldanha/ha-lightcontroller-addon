@@ -69,7 +69,6 @@ export default defineEventHandler(async (event: H3Event) => {
         const interval = setInterval(async () => {
           await eventStream.push("Hello world");
         }, 10);
-
         console.log(eventStream);
         event._handled = true;
       }
@@ -83,7 +82,8 @@ export default defineEventHandler(async (event: H3Event) => {
           // Formato SSE: "data: {json}\n\n"
           console.log(`Found ${entityId}`);
           const chunk = `data: ${JSON.stringify({ entity_id: entityId, state: newState })}\n\n`;
-          event.node.res.write(chunk);
+          console.log(chunk);
+          //event.node.res.write(chunk);
         }
       }
     } catch (e) {
