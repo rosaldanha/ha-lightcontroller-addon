@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onUnmounted } from "vue";
 import { Icon } from "@iconify/vue";
-import { myHooks } from "../server/utils/hooks";
-
+import { useEventSource } from "@vueuse/core";
 const props = defineProps<{
   show: boolean;
 }>();
@@ -10,11 +9,11 @@ const props = defineProps<{
 defineEmits(["close"]);
 
 const eventLog = ref<string[]>([]);
-const eventSource = ref<EventSource | null>(null);
+const eventSource = ref<useEventSource | null>(null);
 
 const connectToStream = () => {
   eventLog.value = []; // Clear log on new connection
-  eventSource.value = new EventSource("api/stream");
+  eventSource.value = new useEventSource("api/stream");
 
   eventSource.value.onmessage = (event) => {
     alert(event);
