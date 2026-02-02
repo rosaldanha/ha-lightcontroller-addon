@@ -72,6 +72,7 @@ const connectToHA = async () => {
       eventLog.value.push(`Recebido: ${event.data}`);
 
       if (msg.type === "auth_required") {
+        eventLog.value.push(token);
         socket.value?.send(
           JSON.stringify({
             type: "auth",
