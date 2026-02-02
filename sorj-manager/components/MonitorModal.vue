@@ -13,14 +13,27 @@ const eventSource = ref<EventSource | null>(null);
 
 const connectToStream = () => {
   eventLog.value = []; // Clear log on new connection
-  eventSource.value = new EventSource("api/stream");
+  eventSource.value = new EventSource("/api/stream");
 
   eventSource.value.onmessage = (event) => {
-    console.log(event);
-    //const data = JSON.parse(event.data);
+    try {
+      const data = JSON.parse(event.data);
+      let logEntry = `[${new Date().toLocaleTimeString()}] `;
 
-    //const logEntry = `[${new Date().toLocaleTimeString()}] Entity: ${data.entity_id}, New State: ${data.state}`;
-    eventLog.value.push(event);
+      if (data.data && data.data === "Connected") {
+        logEntry += "Stream connected successfully.";
+      } else if (data.entity_id && data.state) {
+        logEntry += `Entity: ${data.entity_id}, New State: ${data.state.state}`;
+      } else {
+        logEntry += `Received unhandled message: ${event.data}`;
+      }
+      eventLog.value.push(logEntry);
+    } catch (e) {
+      console.error("Error parsing SSE data:", e);
+      eventLog.value.push(
+        `[${new Date().toLocaleTimeString()}] Received invalid data: ${event.data}`,
+      );
+    }
   };
 
   eventSource.value.onerror = (err) => {

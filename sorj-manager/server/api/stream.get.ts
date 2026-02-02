@@ -61,7 +61,9 @@ export default defineEventHandler(async (event: H3Event) => {
           }),
         );
         console.log("SENT event.node.res");
-        event.node.res.write(JSON.stringify({ data: "Connected" }));
+        event.node.res.write(
+          `data: ${JSON.stringify({ data: "Connected" })}\n\n`,
+        );
       }
       // Verifica se é um evento de mudança de estado
       if (msg.type === "event" && msg.event.event_type === "state_changed") {
