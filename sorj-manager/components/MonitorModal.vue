@@ -13,7 +13,7 @@ const eventSource = ref<EventSource | null>(null);
 
 const connectToStream = () => {
   eventLog.value = []; // Clear log on new connection
-  eventSource.value = new EventSource("api/stream.get");
+  eventSource.value = new EventSource("api/stream");
 
   eventSource.value.onmessage = (event) => {
     const data = JSON.parse(event.data);
