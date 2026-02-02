@@ -14,6 +14,7 @@ export default defineEventHandler(async (event: H3Event) => {
   setResponseStatus(event, 200);
 
   const eventStream = createEventStream(event);
+  eventStream._path = "api/stream";
   const config = useRuntimeConfig();
   // Lista de entidades que você quer monitorar
   const WATCH_LIST = await getMonitoredEntities();
@@ -66,6 +67,7 @@ export default defineEventHandler(async (event: H3Event) => {
           }),
         );
         console.log("SENT event.node.res");
+
         //eventStream.push("Hello world");
         eventStream.push("Hello world");
         console.log(eventStream);
