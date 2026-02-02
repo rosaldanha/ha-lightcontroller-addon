@@ -65,7 +65,7 @@ export default defineEventHandler(async (event: H3Event) => {
       if (msg.type === "event" && msg.event.event_type === "state_changed") {
         const entityId = msg.event.data.entity_id;
         const newState = msg.event.data.new_state;
-        if (entityId.string.startsWith("binary_sensor.")) console.log(entityId);
+        if (entityId.startsWith("binary_sensor.")) console.log(entityId);
         // FILTRO: Só avisa o navegador se for uma entidade da sua lista
         if (WATCH_LIST.includes(entityId)) {
           // Formato SSE: "data: {json}\n\n"
