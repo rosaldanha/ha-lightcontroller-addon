@@ -84,6 +84,7 @@ export default defineEventHandler(async (event: H3Event) => {
           const chunk = `data: ${JSON.stringify({ entity_id: entityId, state: newState })}\n\n`;
           console.log(chunk);
           //event.node.res.write(chunk);
+          return eventStream.send();
         }
       }
     } catch (e) {
