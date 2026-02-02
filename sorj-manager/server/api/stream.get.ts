@@ -41,6 +41,15 @@ export default defineEventHandler(async (event: H3Event) => {
     try {
       const msg = JSON.parse(data.toString());
       console.log(msg);
+      if (msg.type === "auth_required") {
+        haSocket.send(
+          JSON.stringify({
+            id: 1,
+            type: "auth",
+            access_token: token,
+          }),
+        );
+      }
       // Verifica se é um evento de mudança de estado
       if (msg.type === "event" && msg.event.event_type === "state_changed") {
         const entityId = msg.event.data.entity_id;
