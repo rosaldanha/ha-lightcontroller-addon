@@ -63,7 +63,7 @@ export default defineEventHandler(async (event: H3Event) => {
         );
         console.log("SENT event.node.res");
         const sendEvent = (data: any) => {
-          event.node.res.write(`id: ${++count}\n`);
+          event.node.res.write(`id: ${++counter}\n`);
           event.node.res.write(
             `data: ${JSON.stringify({ data2: "Connected" })}\n\n`,
           );
@@ -96,8 +96,9 @@ export default defineEventHandler(async (event: H3Event) => {
     event.node.res.end();
   });
 
+  // Mantém a conexão aberta retornando uma promessa que nunca resolve
   // (ou até o cliente desconectar)
-  // return new Promise(() => {
-  //   /* wait forever */
-  // });
+  return new Promise(() => {
+    /* wait forever */
+  });
 });
