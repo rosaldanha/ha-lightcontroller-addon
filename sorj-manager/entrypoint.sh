@@ -7,6 +7,7 @@ if [ -f /data/options.json ]; then
     eval "$(node /env-loader.js)"
 fi
 export NUXT_SUPERVISOR_TOKEN="$SUPERVISOR_TOKEN"
+export NUXT_PUBLIC_SUPERVISOR_TOKEN="$SUPERVISOR_TOKEN"
 # --- DEBUG: Lista as variáveis carregadas ---
     echo "🔍 Verificando variáveis NUXT_ definidas:"
     env | grep NUXT_

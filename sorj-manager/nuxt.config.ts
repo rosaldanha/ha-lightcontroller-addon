@@ -23,7 +23,7 @@ export default defineNuxtConfig({
     supervisorUrl: "http://supervisor/core/api",
     // Se precisar no frontend (vue), coloque dentro de public:
     public: {
-      // ...
+      supervisorToken: "error",
     },
   },
   router: {

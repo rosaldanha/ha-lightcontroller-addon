@@ -19,7 +19,7 @@ const connectToHA = async (entityIds: string[]) => {
   // @ts-ignore
   const haUrl = runtimeConfig.public.haUrl || window.location.host;
   // @ts-ignore
-  const haToken = runtimeConfig.public.haToken;
+  const haToken = runtimeConfig.public.supervisorToken;
 
   if (!haToken) {
     error.value = "Home Assistant token is not configured.";
@@ -98,7 +98,7 @@ watch(
       error.value = null;
       entityStates.value = {};
       try {
-        const response = await fetch("/api/monitor-entities");
+        const response = await fetch("api/monitor-entities");
         if (!response.ok) {
           throw new Error("Failed to fetch entities");
         }
