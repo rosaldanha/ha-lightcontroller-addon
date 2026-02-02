@@ -1,15 +1,16 @@
 // server/api/stream.get.ts
 import WebSocket from "ws";
-import { H3Event } from "h3";
+import { H3Event, setResponseHeader, setResponseStatus } from "h3";
 import { createApp, eventHandler, createEventStream } from "h3";
 import { useRuntimeConfig } from "#imports";
 import { getMonitoredEntities } from "../utils/getMonitoredEntities";
 
 export default defineEventHandler(async (event: H3Event) => {
   // 1. Configurar cabeçalhos para SSE (Server-Sent Events)
-  setHeader(event, "content-Type", "text/event-stream");
-  setHeader(event, "cache-Control", "no-cache");
-  setHeader(event, "connection", "keep-alive");
+  // Set the headers for SSE
+  setResponseHeader(event, "Content-Type", "text/event-stream");
+  setResponseHeader(event, "Cache-Control", "no-cache");
+  setResponseHeader(event, "Connection", "keep-alive");
   setResponseStatus(event, 200);
 
   const eventStream = createEventStream(event);
@@ -66,9 +67,7 @@ export default defineEventHandler(async (event: H3Event) => {
         );
         console.log("SENT event.node.res");
         //eventStream.push("Hello world");
-        const interval = setInterval(async () => {
-          await eventStream.push("Hello world");
-        }, 10);
+        eventStream.push("Hello world");
         console.log(eventStream);
         return eventStream.send();
         event._handled = true;

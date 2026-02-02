@@ -1,0 +1,63 @@
+{
+  type: 'event',
+  event: {
+    event_type: 'state_changed',
+    data: {
+      entity_id: 'binary_sensor.kinconya16_0101_pi2',
+      old_state: [Object],
+      new_state: [Object]
+    },
+    origin: 'LOCAL',
+    time_fired: '2026-02-02T12:55:11.755192+00:00',
+    context: {
+      id: '01KGF6QQMBGMVE50ZS2W5KRCDS',
+      parent_id: null,
+      user_id: null
+    }
+  },
+  id: 1
+}
+
+
+
+
+[
+  "binary_sensor.kinconya16_0101_pi1",
+  "binary_sensor.kinconya16_0101_pi2",
+  "binary_sensor.kinconya16_0101_pi3",
+  "binary_sensor.kinconya16_0101_pi4",
+  "binary_sensor.kinconya16_0101_pi5",
+  "binary_sensor.kinconya16_0101_pi6",
+  "binary_sensor.kinconya16_0101_pi7",
+  "binary_sensor.kinconya16_0101_pi8",
+  "binary_sensor.kinconya16_0101_pi9",
+  "binary_sensor.kinconya16_0101_pi10",
+  "binary_sensor.kinconya16_0101_pi11",
+  "binary_sensor.kinconya16_0101_pi12",
+  "binary_sensor.kinconya16_0101_pi13",
+  "binary_sensor.kinconya16_0101_pi14",
+  "binary_sensor.kinconya16_0101_pi15",
+  "binary_sensor.kinconya16_0101_pi16"
+]
+
+
+{% set base_devices_list = ['kinconya16_0101'] %}
+{% set todos_esphome = integration_entities('esphome') | map('device_id') | unique | list %}
+{% set ns = namespace(todos_lightcontrollers=[]) %}
+{# 1. Criando a lista de IDs corretamente #}
+{% for dname in base_devices_list -%}
+  {# Convertendo o nome para ID antes de salvar na lista #}
+  {% set pai_id = device_id(dname) %}
+  {% set dispositivos_filtrados = todos_esphome | select('is_device_attr', 'via_device_id', pai_id) | list %}
+  {# Agora salvamos apenas IDs na lista #}
+  {% set ns.todos_lightcontrollers = ns.todos_lightcontrollers + [pai_id] + dispositivos_filtrados %}
+{%- endfor %}
+{# 2. Loop de extração de entidades #}
+{% set et = namespace(todas_entidades=[])%}
+{% for did in ns.todos_lightcontrollers if did is not none -%}
+   {# Removi o filtro 'match' temporariamente para você ver o que existe #}
+   {# Se quiser filtrar, certifique-se que o dispositivo TEM binary_sensor #}
+   {% set entidades = device_entities(did) | select('match', 'binary_sensor') | list %}
+   {% set et.todas_entidades = et.todas_entidades + entidades %}
+{% endfor -%}
+{{ et.todas_entidades }}
