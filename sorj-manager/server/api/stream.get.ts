@@ -2,6 +2,7 @@
 import WebSocket from "ws";
 import { H3Event } from "h3";
 import { useRuntimeConfig } from "#imports";
+import { getMonitoredEntities } from "../utils/getMonitoredEntities";
 
 export default defineEventHandler(async (event: H3Event) => {
   // 1. Configurar cabeçalhos para SSE (Server-Sent Events)
@@ -10,7 +11,7 @@ export default defineEventHandler(async (event: H3Event) => {
   setHeader(event, "Connection", "keep-alive");
   const config = useRuntimeConfig();
   // Lista de entidades que você quer monitorar
-  const WATCH_LIST = get_monitored_entities();
+  const WATCH_LIST = getMonitoredEntities();
   console.log(WATCH_LIST);
 
   const token = config.supervisorToken;
