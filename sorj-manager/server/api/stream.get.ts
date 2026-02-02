@@ -19,7 +19,7 @@ export default defineEventHandler(async (event: H3Event) => {
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjYjBiMmZhNjcyMmQ0YjdiOWE1ZjM4NjgwOTc3YmRkMiIsImlhdCI6MTc3MDAyOTU4NCwiZXhwIjoyMDg1Mzg5NTg0fQ.LqkZG85reW-uDICWw9XKaOlTzD1oUvXozZS-tulY5mA";
 
   const wsUrl = "ws://supervisor/core/websocket";
-  console.log(`Conectando com token ${token}`);
+  console.log(`Conectando com token`);
   // 2. Conectar ao WebSocket do Supervisor (lado do servidor)
   const haSocket = new WebSocket(wsUrl, {
     headers: { Authorization: `Bearer ${token}` },
@@ -27,26 +27,26 @@ export default defineEventHandler(async (event: H3Event) => {
   console.log("conectado");
 
   // 3. Quando conectar, pedir para assinar eventos de mudança de estado
-  haSocket.on("open", () => {
-    // ID deve ser incremental, mas para este exemplo simples fixamos em 1
-    haSocket.send(
-      JSON.stringify({
-        id: 1,
-        type: "subscribe_events",
-        event_type: "state_changed",
-      }),
-    );
-  });
+  // haSocket.on("open", () => {
+  //   // ID deve ser incremental, mas para este exemplo simples fixamos em 1
+  //   haSocket.send(
+  //     JSON.stringify({
+  //       id: 1,
+  //       type: "subscribe_events",
+  //       event_type: "state_changed",
+  //     }),
+  //   );
+  // });
 
   // 4. Quando receber dados do HA, filtrar e enviar para o navegador
-  haSocket.on("message", (data) => {
+  haSocket.on("message", (data: any) => {
     try {
       const msg = JSON.parse(data.toString());
       console.log(msg);
       if (msg.type === "auth_required") {
         haSocket.send(
           JSON.stringify({
-            id: 1,
+            id: 10,
             type: "auth",
             access_token: token,
           }),
