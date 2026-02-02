@@ -68,7 +68,7 @@ const connectToHA = async () => {
     // 4. Handle WebSocket messages
     socket.value.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-      eventLog.value.push(msg);
+      eventLog.value.push(event);
       if (msg.type === "auth_required") {
         socket.value?.send(
           JSON.stringify({
