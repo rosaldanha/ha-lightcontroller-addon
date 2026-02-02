@@ -37,7 +37,7 @@ const connectToHA = async () => {
     // 2. Get token and URL from runtime config
     const config = useRuntimeConfig();
     const token = config.public.supervisorToken;
-    const wsUrl = "ws://hass.sal.net.br/api/websocket";
+    const wsUrl = "wss://hass.sal.net.br/api/websocket";
 
     if (!token) {
       throw new Error(
