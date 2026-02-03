@@ -9,14 +9,14 @@ const magicComment = "#!sorj-net.lightcontroller";
 export default defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig();
-    const configDir = config.public.esphomeConfigFolder;
+    const configDir = config.esphomeConfigFolder;
 
     if (!configDir) {
       throw new Error("Configuration folder is not defined.");
     }
 
     if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
+      throw new Error("Configuration folder does not exist.");
     }
 
     const body = await readBody<EsphomeConfig>(event);
@@ -45,8 +45,11 @@ export default defineEventHandler(async (event) => {
 
     fs.writeFileSync(filePath, finalYaml, "utf-8");
 
-    return { success: true, message: `Configuration for ${deviceName} saved.`, path: filePath };
-
+    return {
+      success: true,
+      message: `Configuration for ${deviceName} saved.`,
+      path: filePath,
+    };
   } catch (error: any) {
     console.error("Error saving device configuration:", error);
     event.res.statusCode = 500;
