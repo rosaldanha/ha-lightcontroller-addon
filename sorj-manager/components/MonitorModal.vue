@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onUnmounted, computed } from "vue";
+import { ref, watch, onUnmounted } from "vue";
 import { Icon } from "@iconify/vue";
 import { $fetch } from "ofetch";
 import type { EsphomeConfig } from "~/utils/EsphomeConfig";
@@ -16,6 +16,8 @@ interface ChangedPortInfo {
   config: EsphomeConfig;
   port: number;
   key: string;
+  entityName: string; // e.g., kinconya16_0101_pi16
+  action: string;
 }
 const changedPorts = ref<ChangedPortInfo[]>([]);
 
@@ -28,6 +30,18 @@ let messageId = 1;
 const subDeviceIds = (config: EsphomeConfig) => {
   if (!config?.esphome?.devices) return [];
   return config.esphome.devices.map((d) => d.id).filter(Boolean);
+};
+
+const saveAction = (portInfo: ChangedPortInfo) => {
+  const dataToShow = {
+    deviceName: portInfo.config.substitutions.device_name,
+    port: portInfo.port,
+    entityName: portInfo.entityName,
+    piDevice: portInfo.config.substitutions[`pi${portInfo.port}device`],
+    piSwState: portInfo.config.substitutions[`pi${portInfo.port}swstate`],
+    action: portInfo.action,
+  };
+  alert(JSON.stringify(dataToShow, null, 2));
 };
 
 const connectToHA = async () => {
@@ -130,6 +144,8 @@ const handleStateChange = (entityId: string) => {
         config: foundConfig,
         port: portNumber,
         key: key,
+        entityName: entityName,
+        action: "",
       });
     }
   }
@@ -197,24 +213,25 @@ onUnmounted(() => {
           <div
             v-for="item in changedPorts"
             :key="item.key"
-            class="bg-gray-800 border border-gray-700 rounded-lg p-4 animate-fade-in"
+            class="bg-gray-800 border border-gray-700 rounded-lg p-4 flex flex-col gap-4 animate-fade-in"
           >
-            <h4 class="font-bold text-lg mb-3 text-gray-300">
+            <h4 class="font-bold text-lg text-gray-300">
               Input pi{{ item.port }}
               <span class="text-sm font-light text-gray-400 ml-1"
                 >on {{ item.config.substitutions.device_name }}</span
               >
             </h4>
+
             <div class="space-y-4">
               <div>
                 <label
-                  :for="`pi${item.port}device`"
+                  :for="`${item.key}-device`"
                   class="block text-xs font-medium text-gray-400 mb-1"
                   >Sub-Device:</label
                 >
                 <select
                   v-model="item.config.substitutions[`pi${item.port}device`]"
-                  :id="`pi${item.port}device`"
+                  :id="`${item.key}-device`"
                   class="input-field"
                 >
                   <option :value="undefined">None</option>
@@ -229,17 +246,39 @@ onUnmounted(() => {
               </div>
               <div>
                 <label
-                  :for="`pi${item.port}swstate`"
+                  :for="`${item.key}-swstate`"
                   class="block text-xs font-medium text-gray-400 mb-1"
                   >Switch Label:</label
                 >
                 <input
                   v-model="item.config.substitutions[`pi${item.port}swstate`]"
-                  :id="`pi${item.port}swstate`"
+                  :id="`${item.key}-swstate`"
                   type="text"
                   class="input-field"
                 />
               </div>
+              <div>
+                <label
+                  :for="`${item.entityName}action`"
+                  class="block text-xs font-medium text-gray-400 mb-1"
+                  >Action:</label
+                >
+                <input
+                  v-model="item.action"
+                  :id="`${item.entityName}action`"
+                  type="text"
+                  class="input-field"
+                />
+              </div>
+            </div>
+
+            <div class="mt-auto flex justify-end">
+              <button
+                @click="saveAction(item)"
+                class="px-4 py-2 bg-esphome-accent hover:brightness-110 text-white rounded shadow-lg shadow-esphome-accent/20 transition-all text-sm font-medium flex items-center"
+              >
+                <Icon icon="mdi:content-save-outline" class="mr-2" /> Save
+              </button>
             </div>
           </div>
         </div>
