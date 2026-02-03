@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig();
     // Correctly access the public runtime config variable
-    const configDir = config.public.esphomeConfigFolder;
+    const configDir = config.esphomeConfigFolder;
 
     if (!configDir) {
       throw new Error("Configuration folder is not defined in runtime config.");
