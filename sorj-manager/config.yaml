@@ -25,7 +25,7 @@ map:
 options:
   NUXT_ESPHOME_CONFIG_FOLDER: "../config/esphome" # esphomeConfigFolder
   NUXT_PUBLIC_SUPERVISOR_TOKEN: "error"
-  NUXT_PUBLIC_WSS_URL: "wss://hass.sal.net.br/api/websocket"
+  NUXT_PUBLIC_WSS_URL: "error"
 
 schema:
   NUXT_ESPHOME_CONFIG_FOLDER: str
