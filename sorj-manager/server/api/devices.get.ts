@@ -5,13 +5,13 @@ import path from "path";
 import yaml from "js-yaml";
 import { EsphomeConfig, ESPSCHEMA } from "~/utils/EsphomeConfig";
 import { useRuntimeConfig } from "#imports";
+import { MagicComment } from "../../utils/Constants";
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   //console.log(config);
   const configDir = config.esphomeConfigFolder;
   //console.log(configDir);
   const configs: EsphomeConfig[] = [];
-  const magicComment = "#light_controller_managed_config";
 
   if (!configDir) {
     console.warn(
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
       const filePath = path.join(configDir, file);
       const fileContent = fs.readFileSync(filePath, "utf-8");
       const firstLine = fileContent.split("\n")[0].trim();
-      if (firstLine === magicComment) {
+      if (firstLine === MagicComment) {
         try {
           const data = yaml.load(fileContent, { schema: ESPSCHEMA });
           if (data && typeof data === "object") {

@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
 import { EsphomeConfig, ESPSCHEMA } from "~/utils/EsphomeConfig";
+import { MagicComment } from "../../utils/Constants";
 
 const magicComment = "#!sorj-net.lightcontroller";
 
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
       sortKeys: false,
     });
 
-    const finalYaml = magicComment + "\n" + yamlString;
+    const finalYaml = MagicComment + "\n" + yamlString;
     const deviceName = configInstance.substitutions.device_name;
     const filePath = path.join(configDir, `${deviceName}.yaml`);
 
