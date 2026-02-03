@@ -7,7 +7,7 @@ import { EsphomeConfig, ESPSCHEMA } from "~/utils/EsphomeConfig";
 import { ha } from "~/server/utils/ha";
 import { useRuntimeConfig } from "#imports";
 
-export const getMonitoredEntities = async (): Promise<string[]> => {
+export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const configDir = config.esphomeConfigFolder;
   const deviceNames: string[] = [];
@@ -93,4 +93,4 @@ export const getMonitoredEntities = async (): Promise<string[]> => {
     console.error("Error getting entities from Home Assistant:", error);
     return [];
   }
-};
+});
