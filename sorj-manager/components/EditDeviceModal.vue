@@ -8,13 +8,14 @@ const props = defineProps<{
   device?: EsphomeConfig;
 }>();
 
-const emit = defineEmits(["close", "save"]);
+const emit = defineEmits(["close"]);
 
 const activeTab = ref("base_config");
 const formData = ref<EsphomeConfig | undefined>();
 const validationErrors = ref<{ subdevices: { [key: number]: any } }>({
   subdevices: {},
 });
+const isSaving = ref(false);
 
 const areas = ref<string[]>([]);
 
@@ -96,13 +97,25 @@ const validateSubDevices = () => {
   return isValid;
 };
 
-const save = () => {
+const save = async () => {
   if (!validateSubDevices()) {
     alert("Please fix the validation errors before saving.");
     return;
   }
-  if (formData.value) {
-    emit("save", formData.value);
+  if (!formData.value) return;
+
+  isSaving.value = true;
+  try {
+    await $fetch("/api/devices", {
+      method: "POST",
+      body: formData.value,
+    });
+    emit("close");
+  } catch (err: any) {
+    console.error("Failed to save device:", err);
+    alert(`Error: ${err.data?.message || err.message}`);
+  } finally {
+    isSaving.value = false;
   }
 };
 
@@ -405,9 +418,12 @@ const removeSubDevice = (index: number) => {
         </button>
         <button
           @click="save"
-          class="px-5 py-2 bg-esphome-accent hover:brightness-110 text-white rounded shadow-lg shadow-esphome-accent/20 transition-all text-sm font-medium flex items-center"
+          :disabled="isSaving"
+          class="px-5 py-2 bg-esphome-accent hover:brightness-110 text-white rounded shadow-lg shadow-esphome-accent/20 transition-all text-sm font-medium flex items-center disabled:bg-gray-500 disabled:cursor-not-allowed"
         >
-          <Icon icon="mdi:content-save-outline" class="mr-2" /> Save Changes
+          <Icon v-if="isSaving" icon="mdi:loading" class="animate-spin mr-2" />
+          <Icon v-else icon="mdi:content-save-outline" class="mr-2" />
+          {{ isSaving ? "Saving..." : "Save Changes" }}
         </button>
       </div>
     </div>
