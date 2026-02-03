@@ -1,67 +1,74 @@
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from "vue";
+import { ref, watch, onUnmounted, computed } from "vue";
 import { Icon } from "@iconify/vue";
 import { $fetch } from "ofetch";
+import type { EsphomeConfig } from "~/utils/EsphomeConfig";
+
 const props = defineProps<{
   show: boolean;
+  devices: EsphomeConfig[] | null;
 }>();
 
 defineEmits(["close"]);
 
-const eventLog = ref<string[]>([]);
+// Holds info for the cards to be displayed
+interface ChangedPortInfo {
+  config: EsphomeConfig;
+  port: number;
+  key: string;
+}
+const changedPorts = ref<ChangedPortInfo[]>([]);
+
 const socket = ref<WebSocket | null>(null);
 const loading = ref(false);
 const error = ref<string | null>(null);
+const status = ref<string>("");
 let messageId = 1;
+
+const subDeviceIds = (config: EsphomeConfig) => {
+  if (!config?.esphome?.devices) return [];
+  return config.esphome.devices.map((d) => d.id).filter(Boolean);
+};
 
 const connectToHA = async () => {
   loading.value = true;
   error.value = null;
-  eventLog.value = [];
+  changedPorts.value = [];
+  status.value = "Connecting...";
 
   try {
-    // 1. Fetch entities to watch
-    const response = await $fetch("api/monitored_entities");
+    const response = await $fetch<string[]>("api/monitored_entities");
     if (!response) {
       throw new Error("Failed to fetch entities to monitor.");
     }
     const WATCH_LIST = response;
 
     if (!WATCH_LIST || WATCH_LIST.length === 0) {
-      eventLog.value.push("No entities found to monitor.");
+      status.value = "No entities found to monitor.";
       loading.value = false;
       return;
     }
-    eventLog.value.push(`Monitoring ${WATCH_LIST.length} entities...`);
+    status.value = `Monitoring ${WATCH_LIST.length} entities...`;
 
-    // 2. Get token and URL from runtime config
-    const config = useRuntimeConfig();
-    const token = config.public.supervisorToken;
-    const wssUrl = config.public.wssUrl;
+    const runtimeConfig = useRuntimeConfig();
+    const token = runtimeConfig.public.supervisorToken;
+    const wssUrl = runtimeConfig.public.wssUrl;
 
     if (!token) {
-      throw new Error(
-        "Supervisor token is not available in public runtime config.",
-      );
+      throw new Error("Supervisor token is not available.");
     }
 
-    // 3. Connect WebSocket
     socket.value = new WebSocket(wssUrl);
 
-    // 4. Handle WebSocket messages
     socket.value.onmessage = (event) => {
       const msg = JSON.parse(event.data);
+
       if (msg.type === "auth_required") {
         socket.value?.send(
-          JSON.stringify({
-            type: "auth",
-            access_token: token,
-          }),
+          JSON.stringify({ type: "auth", access_token: token }),
         );
       } else if (msg.type === "auth_ok") {
-        eventLog.value.push(
-          "Authentication successful. Subscribing to events...",
-        );
+        status.value = "Authentication successful. Subscribing to events...";
         socket.value?.send(
           JSON.stringify({
             id: messageId++,
@@ -74,32 +81,57 @@ const connectToHA = async () => {
         msg.event.event_type === "state_changed"
       ) {
         const entityId = msg.event.data.entity_id;
-        const newState = msg.event.data.new_state;
         if (WATCH_LIST.includes(entityId)) {
-          const logEntry = `[${new Date().toLocaleTimeString()}] Entity: ${entityId}, New State: ${newState.state}`;
-          eventLog.value.push(logEntry);
+          handleStateChange(entityId);
         }
       }
     };
 
     socket.value.onopen = () => {
-      eventLog.value.push(
-        "WebSocket connection opened, waiting for authentication...",
-      );
+      status.value = "Connection opened, authenticating...";
     };
-
     socket.value.onerror = (err) => {
       console.error("WebSocket Error:", err);
       error.value = "Failed to connect to Home Assistant WebSocket.";
     };
-
     socket.value.onclose = () => {
-      eventLog.value.push("WebSocket connection closed.");
+      status.value = "WebSocket connection closed.";
     };
   } catch (e: any) {
     error.value = e.message;
   } finally {
     loading.value = false;
+  }
+};
+
+const handleStateChange = (entityId: string) => {
+  if (!props.devices) return;
+
+  const entityName = entityId.split(".")[1];
+  if (!entityName || !entityName.includes("_pi")) return;
+
+  const lastUnderscoreIndex = entityName.lastIndexOf("_");
+  const deviceName = entityName.substring(0, lastUnderscoreIndex);
+  const portId = entityName.substring(lastUnderscoreIndex + 1);
+  const portNumber = parseInt(portId.replace("pi", ""), 10);
+
+  if (isNaN(portNumber)) return;
+
+  const foundConfig = props.devices.find(
+    (config) =>
+      config.substitutions.device_name === deviceName ||
+      config.esphome.devices?.some((d) => d.name === deviceName),
+  );
+
+  if (foundConfig) {
+    const key = `${foundConfig.substitutions.device_name}-${portNumber}`;
+    if (!changedPorts.value.some((p) => p.key === key)) {
+      changedPorts.value.unshift({
+        config: foundConfig,
+        port: portNumber,
+        key: key,
+      });
+    }
   }
 };
 
@@ -139,7 +171,7 @@ onUnmounted(() => {
       >
         <h3 class="text-xl font-semibold text-white flex items-center">
           <Icon icon="mdi:monitor-dashboard" class="mr-2 text-esphome-accent" />
-          Monitor Stream
+          Input Monitor
         </h3>
         <button @click="$emit('close')" class="text-gray-400 hover:text-white">
           <Icon icon="mdi:close" class="text-2xl" />
@@ -147,14 +179,68 @@ onUnmounted(() => {
       </div>
 
       <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
-        <div class="animate-fade-in">
+        <div v-if="loading" class="text-center text-gray-400">Loading...</div>
+        <div v-else-if="error" class="text-center text-red-400">
+          {{ error }}
+        </div>
+        <div
+          v-else-if="changedPorts.length === 0"
+          class="text-center text-gray-400 italic mt-10"
+        >
+          {{ status }}<br />
+          Waiting for input state changes...
+        </div>
+        <div
+          v-else
+          class="animate-fade-in grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
           <div
-            class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 h-full"
+            v-for="item in changedPorts"
+            :key="item.key"
+            class="bg-gray-800 border border-gray-700 rounded-lg p-4 animate-fade-in"
           >
-            <pre
-              class="text-sm text-gray-300 font-mono whitespace-pre-wrap h-full overflow-y-auto custom-scrollbar"
-              >{{ eventLog.join("\n") }}</pre
-            >
+            <h4 class="font-bold text-lg mb-3 text-gray-300">
+              Input pi{{ item.port }}
+              <span class="text-sm font-light text-gray-400 ml-1"
+                >on {{ item.config.substitutions.device_name }}</span
+              >
+            </h4>
+            <div class="space-y-4">
+              <div>
+                <label
+                  :for="`pi${item.port}device`"
+                  class="block text-xs font-medium text-gray-400 mb-1"
+                  >Sub-Device:</label
+                >
+                <select
+                  v-model="item.config.substitutions[`pi${item.port}device`]"
+                  :id="`pi${item.port}device`"
+                  class="input-field"
+                >
+                  <option :value="undefined">None</option>
+                  <option
+                    v-for="subId in subDeviceIds(item.config)"
+                    :key="subId"
+                    :value="subId"
+                  >
+                    {{ subId }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label
+                  :for="`pi${item.port}swstate`"
+                  class="block text-xs font-medium text-gray-400 mb-1"
+                  >Switch Label:</label
+                >
+                <input
+                  v-model="item.config.substitutions[`pi${item.port}swstate`]"
+                  :id="`pi${item.port}swstate`"
+                  type="text"
+                  class="input-field"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -175,13 +261,12 @@ onUnmounted(() => {
 
 <style scoped>
 .animate-fade-in {
-  animation: fadeIn 0.2s ease-in-out;
-  height: 100%;
+  animation: fadeIn 0.3s ease-in-out;
 }
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(5px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -197,5 +282,8 @@ onUnmounted(() => {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #4b5563;
   border-radius: 20px;
+}
+.input-field {
+  @apply w-full bg-gray-900/50 border border-gray-600 rounded p-2.5 text-white focus:ring-2 focus:ring-esphome-accent focus:border-transparent outline-none transition-all text-sm;
 }
 </style>

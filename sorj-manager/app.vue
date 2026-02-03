@@ -111,7 +111,11 @@ const openEditModal = (device: EsphomeConfig) => {
     :device="deviceToEdit"
     @close="showEditModal = false"
   />
-  <MonitorModal :show="showMonitorModal" @close="showMonitorModal = false" />
+  <MonitorModal
+    :show="showMonitorModal"
+    :devices="devices"
+    @close="showMonitorModal = false"
+  />
 </template>
 
 <style>
