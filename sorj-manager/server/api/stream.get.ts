@@ -21,8 +21,6 @@ export default defineEventHandler(async (event: H3Event) => {
   console.log(WATCH_LIST);
 
   const token = config.supervisorToken;
-  //const token =
-  // "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjYjBiMmZhNjcyMmQ0YjdiOWE1ZjM4NjgwOTc3YmRkMiIsImlhdCI6MTc3MDAyOTU4NCwiZXhwIjoyMDg1Mzg5NTg0fQ.LqkZG85reW-uDICWw9XKaOlTzD1oUvXozZS-tulY5mA";
 
   const wsUrl = "ws://supervisor/core/websocket";
   console.log(`Conectando com token`);

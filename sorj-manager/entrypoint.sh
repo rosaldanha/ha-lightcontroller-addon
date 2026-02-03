@@ -9,10 +9,10 @@ fi
 export NUXT_SUPERVISOR_TOKEN="$SUPERVISOR_TOKEN"
 
 # --- DEBUG: Lista as variáveis carregadas ---
-    echo "🔍 Verificando variáveis NUXT_ definidas:"
-    env | grep NUXT_
-    env
-    echo "----------------------------------------"
+    # echo "🔍 Verfiying defined NUXT_ env vars:"
+    # env | grep NUXT_
+    # env
+    # echo "----------------------------------------"
 
 # Executa o comando original (CMD)
 exec "$@"
