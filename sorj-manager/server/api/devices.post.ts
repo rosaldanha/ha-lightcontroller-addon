@@ -20,26 +20,41 @@ export default defineEventHandler(async (event) => {
       throw new Error("Configuration folder does not exist.");
     }
 
-    const body = await readBody<EsphomeConfig>(event);
+    const body = await readBody<any>(event);
 
     if (!body || !body.substitutions || !body.substitutions.device_name) {
       throw new Error("Invalid EsphomeConfig object received.");
     }
 
-    // The fromObject static method cleans up the object and ensures all classes are correctly instantiated.
-    // When we receive the object from the client, it's a plain JSON object.
-    const configInstance = EsphomeConfig.fromObject(body);
+    const dataToDump = body;
 
-    // js-yaml can't dump functions or complex class instances correctly without custom representers.
-    // A simple way to ensure we only dump data properties is to serialize and deserialize.
-    const plainObject = JSON.parse(JSON.stringify(configInstance));
+    // Manually reconstruct the 'packages' property with EsphomeInclude instances
+    // This is necessary so that the custom representer in ESPSCHEMA is triggered.
+    if (dataToDump.packages) {
+      for (const key in dataToDump.packages) {
+        const pkg = dataToDump.packages[key];
 
-    const yamlString = yaml.dump(plainObject, {
+        // Heuristic to decide how to wrap the data for the !include tag.
+        if (pkg.data && typeof pkg.data === "string") {
+          // Handles scalar includes like: base: !include path/to/file.yaml
+          dataToDump.packages[key] = new EsphomeInclude(pkg.data);
+        } else {
+          // Handles mapping includes like: po1: !include { file: ..., vars: ... }
+          // We create a new object without the extra properties from the client-side model.
+          const includeData = {
+            file: pkg.file,
+            vars: pkg.vars,
+          };
+          dataToDump.packages[key] = new EsphomeInclude(includeData);
+        }
+      }
+    }
+
+    const yamlString = yaml.dump(dataToDump, {
       schema: ESPSCHEMA,
       noRefs: true,
       sortKeys: false,
     });
-
     const finalYaml = MagicComment + "\n" + yamlString;
     const deviceName = configInstance.substitutions.device_name;
     const filePath = path.join(configDir, `${deviceName}.yaml`);
