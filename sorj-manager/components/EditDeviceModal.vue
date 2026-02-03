@@ -106,7 +106,7 @@ const save = async () => {
 
   isSaving.value = true;
   try {
-    await $fetch("/api/devices", {
+    await $fetch("api/devices", {
       method: "POST",
       body: formData.value,
     });
