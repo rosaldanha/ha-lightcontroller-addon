@@ -24,6 +24,7 @@ export default defineNuxtConfig({
     // Se precisar no frontend (vue), coloque dentro de public:
     public: {
       supervisorToken: "error",
+      wssUrl: "error",
     },
   },
   router: {
