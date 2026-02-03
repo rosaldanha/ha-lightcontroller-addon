@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onUnmounted } from "vue";
 import { Icon } from "@iconify/vue";
-
+import { $fetch } from "ofetch";
 const props = defineProps<{
   show: boolean;
 }>();
@@ -21,13 +21,12 @@ const connectToHA = async () => {
 
   try {
     // 1. Fetch entities to watch
-    const response = await fetch("api/monitoredEntities");
+    const response = await $fetch("api/monitoredEntities");
     if (!response.ok) {
-      alert("error");
       throw new Error("Failed to fetch entities to monitor.");
     }
-    const response_data = await response.json();
-    const WATCH_LIST = response_data;
+
+    const WATCH_LIST = response;
 
     if (!WATCH_LIST || WATCH_LIST.length === 0) {
       eventLog.value.push("No entities found to monitor.");
