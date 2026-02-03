@@ -23,6 +23,7 @@ const connectToHA = async () => {
     // 1. Fetch entities to watch
     const response = await fetch("api/monitoredEntities");
     if (!response.ok) {
+      alert("error");
       throw new Error("Failed to fetch entities to monitor.");
     }
     const response_data = await response.json();
