@@ -21,28 +21,12 @@ const connectToHA = async () => {
 
   try {
     // 1. Fetch entities to watch
-    // const response = await fetch("api/monitor-entities");
-    // if (!response.ok) {
-    //   throw new Error("Failed to fetch entities to monitor.");
-    // }
-    const WATCH_LIST = [
-      "binary_sensor.kinconya16_0101_pi2",
-      "binary_sensor.kinconya16_0101_pi3",
-      "binary_sensor.kinconya16_0101_pi4",
-      "binary_sensor.kinconya16_0101_pi5",
-      "binary_sensor.kinconya16_0101_pi6",
-      "binary_sensor.kinconya16_0101_pi7",
-      "binary_sensor.kinconya16_0101_pi8",
-      "binary_sensor.kinconya16_0101_pi9",
-      "binary_sensor.kinconya16_0101_pi10",
-      "binary_sensor.kinconya16_0101_pi11",
-      "binary_sensor.kinconya16_0101_pi12",
-      "binary_sensor.kinconya16_0101_pi13",
-      "binary_sensor.kinconya16_0101_pi14",
-      "binary_sensor.kinconya16_0101_pi15",
-      "binary_sensor.kinconya16_0101_pi16",
-      "binary_sensor.sw_01_pi1",
-    ];
+    const response = await fetch("api/monitor-entities");
+    if (!response.ok) {
+      throw new Error("Failed to fetch entities to monitor.");
+    }
+    const response_data = await response.json();
+    const WATCH_LIST = response_data;
 
     if (!WATCH_LIST || WATCH_LIST.length === 0) {
       eventLog.value.push("No entities found to monitor.");
