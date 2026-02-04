@@ -7,7 +7,6 @@ substitutions:
   pi1swstate: "sw_01_la"
   po1device: "Luzes_Cozinha"
   pi1device: "sw_01"
-
 packages:
   base: !include packages/KINCONY-KC868-A16/base.yaml
   po1: !include
@@ -25,17 +24,11 @@ packages:
       po_name: Teste
       po_icon: ""
       po_device_class: ""
-
-
-
-     
-
-esphome:  
+esphome:
   area: sotao
-
-  devices: 
+  devices:
     - id: Luzes_Cozinha
-      name: "Luzes Cozinha" 
+      name: "Luzes Cozinha"
       area_id: cozinha
     - id: sw_01
       name: "sw_01"

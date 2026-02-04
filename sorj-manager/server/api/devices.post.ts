@@ -50,15 +50,10 @@ export default defineEventHandler(async (event) => {
         }
       }
     }
-
     const yamlString = yaml.dump(dataToDump, {
       schema: ESPSCHEMA,
-      noRefs: true,
-      sortKeys: false,
     });
-
     const finalYaml = MagicComment + "\n" + yamlString;
-    // Correctly get the deviceName from the body
     const deviceName = dataToDump.substitutions.device_name;
     const filePath = path.join(configDir, `${deviceName}.yaml`);
 
