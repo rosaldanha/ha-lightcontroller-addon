@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
 import { Icon } from "@iconify/vue";
-import type { EsphomeConfig } from "~/utils/EsphomeConfig";
+import {
+  type EsphomeConfig,
+  OutputPortLight,
+  OutputPortSwitch,
+} from "~/utils/EsphomeConfig";
+import type { Port } from "~/utils/EsphomeConfig";
+import { PackageKind } from "~/utils/Constants";
 
 const props = defineProps<{
   show: boolean;
@@ -51,6 +57,66 @@ const subDeviceIds = computed(() => {
   if (!formData.value?.esphome?.devices) return [];
   return formData.value.esphome.devices.map((d) => d.id).filter(Boolean);
 });
+
+// Computed for output packages
+const outputPackages = computed(() => {
+  if (!formData.value?.packages) return [];
+  return Object.entries(formData.value.packages)
+    .filter(
+      ([key, value]) =>
+        key.startsWith("po") &&
+        (value._packageKind === PackageKind.LIGHT ||
+          value._packageKind === PackageKind.SWITCH ||
+          (value as any).isNew), // (value as any).isNew is for new items
+    )
+    .map(([key, value]) => ({ key, value: value as Port | any }))
+    .sort((a, b) => {
+      const numA = parseInt(a.key.substring(2), 10);
+      const numB = parseInt(b.key.substring(2), 10);
+      return numA - numB;
+    });
+});
+
+const addOutput = () => {
+  if (!formData.value?.packages) return;
+
+  let nextPo = 1;
+  while (formData.value.packages[`po${nextPo}`]) {
+    nextPo++;
+  }
+  if (nextPo > 16) {
+    alert("Maximum number of 16 outputs reached.");
+    return;
+  }
+  const newKey = `po${nextPo}`;
+  formData.value.packages[newKey] = { isNew: true, type: "" };
+};
+
+const removeOutput = (key: string) => {
+  if (!formData.value?.packages) return;
+  const portName = formData.value.packages[key]?.vars?.po_name || key;
+  if (
+    window.confirm(`Are you sure you want to delete the output "${portName}"?`)
+  ) {
+    delete formData.value.packages[key];
+  }
+};
+
+const onOutputTypeChange = (key: string, newType: "light" | "switch") => {
+  if (!formData.value?.packages) return;
+  const id = key;
+  if (newType === "light") {
+    formData.value.packages[key] = new OutputPortLight(
+      id,
+      `${id}_light`,
+      "",
+      "",
+      0,
+    );
+  } else {
+    formData.value.packages[key] = new OutputPortSwitch(id, `${id}_switch`, "");
+  }
+};
 
 const validateSubDevices = () => {
   if (!formData.value?.esphome?.devices) return true;
@@ -402,8 +468,159 @@ const removeSubDevice = (index: number) => {
             </div>
           </div>
         </div>
-        <div v-else-if="activeTab === 'outputs'" class="animate-fade-in">
-          <!-- TODO: Implement Outputs fields -->
+        <div
+          v-else-if="activeTab === 'outputs' && formData"
+          class="animate-fade-in space-y-4"
+        >
+          <div class="flex justify-between items-center mb-2">
+            <p class="text-sm text-gray-400">
+              Manage physical output ports (relays).
+            </p>
+            <button
+              @click="addOutput"
+              class="bg-esphome-accent hover:brightness-110 text-white px-4 py-2 rounded-md flex items-center text-sm font-semibold"
+            >
+              <Icon icon="mdi:plus" class="mr-1 text-base" /> New
+            </button>
+          </div>
+          <div
+            v-if="!outputPackages || outputPackages.length === 0"
+            class="text-center py-10 text-gray-500 italic border-2 border-dashed border-gray-700 rounded-lg"
+          >
+            No outputs configured.
+          </div>
+
+          <div
+            v-for="pkg in outputPackages"
+            :key="pkg.key"
+            class="bg-gray-800 border border-gray-700 rounded-lg p-4 relative group"
+          >
+            <div class="flex justify-between items-start mb-3">
+              <h4 class="font-bold text-lg text-gray-300 uppercase">
+                Output {{ pkg.key }}
+              </h4>
+              <button
+                @click="removeOutput(pkg.key)"
+                class="text-gray-500 hover:text-red-400 opacity-50 hover:opacity-100 transition-opacity"
+              >
+                <Icon icon="mdi:trash-can-outline" class="text-lg" />
+              </button>
+            </div>
+
+            <!-- New Port Type Selector -->
+            <div v-if="pkg.value.isNew" class="flex items-center gap-4">
+              <label class="text-sm font-medium text-gray-400"
+                >Select Output Type:</label
+              >
+              <select
+                v-model="pkg.value.type"
+                @change="
+                  onOutputTypeChange(
+                    pkg.key,
+                    ($event.target as HTMLSelectElement)?.value as any,
+                  )
+                "
+                class="input-field"
+              >
+                <option disabled value="">Choose type...</option>
+                <option value="light">Light</option>
+                <option value="switch">Switch</option>
+              </select>
+            </div>
+
+            <!-- Light Port Form -->
+            <div
+              v-else-if="pkg.value._packageKind === PackageKind.LIGHT"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1"
+                  >Name</label
+                >
+                <input
+                  v-model="pkg.value.vars.po_name"
+                  type="text"
+                  class="input-field"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1"
+                  >Sub-Device</label
+                >
+                <select v-model="pkg.value.vars.po_device" class="input-field">
+                  <option value="">None</option>
+                  <option
+                    v-for="subId in subDeviceIds"
+                    :key="subId"
+                    :value="subId"
+                  >
+                    {{ subId }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1"
+                  >Hub ID</label
+                >
+                <input
+                  v-model="pkg.value.vars.po_hub_id"
+                  type="text"
+                  class="input-field"
+                  placeholder="e.g. ${hub_out_1}"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1"
+                  >Placeholder ID</label
+                >
+                <input
+                  v-model.number="pkg.value.vars.po_ph_id"
+                  type="number"
+                  class="input-field"
+                />
+              </div>
+            </div>
+
+            <!-- Switch Port Form -->
+            <div
+              v-else-if="pkg.value._packageKind === PackageKind.SWITCH"
+              class="grid grid-cols-1 md:grid-cols-3 gap-4"
+            >
+              <div class="md:col-span-2">
+                <label class="block text-xs font-medium text-gray-400 mb-1"
+                  >Name</label
+                >
+                <input
+                  v-model="pkg.value.vars.po_name"
+                  type="text"
+                  class="input-field"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1"
+                  >Icon</label
+                >
+                <input
+                  v-model="pkg.value.vars.po_icon"
+                  type="text"
+                  class="input-field"
+                  placeholder="e.g. mdi:fan"
+                />
+              </div>
+              <div class="md:col-span-3">
+                <label class="block text-xs font-medium text-gray-400 mb-1"
+                  >Device Class</label
+                >
+                <input
+                  v-model="pkg.value.vars.po_device_class"
+                  type="text"
+                  class="input-field"
+                  placeholder="e.g. switch"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
