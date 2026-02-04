@@ -260,7 +260,6 @@ const removeSubDevice = (index: number) => {
     validateSubDevices(); // Re-validate after removal
   }
 };
-console.debug(formdata.value);
 </script>
 
 <template>
@@ -749,6 +748,7 @@ console.debug(formdata.value);
       </div>
     </div>
   </div>
+  <pre>{{ formData.value }}</pre>
 </template>
 
 <style scoped>
