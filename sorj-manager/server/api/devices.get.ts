@@ -27,11 +27,11 @@ export default defineEventHandler(async (event) => {
         continue;
       }
       const filePath = path.join(configDir, file);
-      const fileContent = fs.readFileSync(filePath);
+      const fileContent = fs.readFileSync(filePath, "utf-8");
       const firstLine = fileContent.split("\n")[0].trim();
       if (firstLine === MagicComment) {
         try {
-          const data: EsphomeConfig = yaml.load(fileContent, {
+          const data: EsphomeConfig = yaml.load(fs.readFileSync(filePath), {
             schema: ESPSCHEMA,
           });
           configs.push(data);
