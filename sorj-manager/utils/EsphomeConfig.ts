@@ -2,7 +2,7 @@ import yaml from "js-yaml";
 import { PackageKind } from "./Constants";
 
 export class EsphomeInclude {
-  readonly _packageKind: PackageKind = PackageKind.INCLUDE;
+  _packageKind: PackageKind = PackageKind.INCLUDE;
   readonly _isEsphomeInclude: boolean = true;
   constructor(public data: string | object) {}
 }
@@ -107,7 +107,7 @@ export class Substitutions {
 }
 export abstract class Port {
   abstract readonly file: string;
-  abstract readonly _packageKind: PackageKind;
+  abstract _packageKind: PackageKind;
   vars: Record<string, string | number> = {};
   constructor(id: string) {
     //super(id);
@@ -116,12 +116,12 @@ export abstract class Port {
 }
 export class InputPort extends Port {
   readonly file: string = "None";
-  readonly _packageKind: PackageKind = PackageKind.NONE;
+  _packageKind: PackageKind = PackageKind.NONE;
   //unused, will works only if input has a package to change device class, probably with extends
 }
 export class OutputPortLight extends Port {
   readonly file: string = "packages/KINCONY-KC868-A16/light_kincony.yaml";
-  readonly _packageKind: PackageKind = PackageKind.LIGHT;
+  _packageKind: PackageKind = PackageKind.LIGHT;
   constructor(
     id: string,
     po_name: string,
@@ -130,6 +130,7 @@ export class OutputPortLight extends Port {
     po_ph_id: number,
   ) {
     super(id);
+    this._packageKind = PackageKind.LIGHT;
     this.vars["po_id"] = id;
     this.vars["po_name"] = po_name;
     this.vars["po_device"] = po_device;
@@ -139,7 +140,7 @@ export class OutputPortLight extends Port {
 }
 export class OutputPortSwitch extends Port {
   readonly file: string = "packages/KINCONY-KC868-A16/switch_kincony.yaml";
-  readonly _packageKind: PackageKind = PackageKind.SWITCH;
+  _packageKind: PackageKind = PackageKind.SWITCH;
   constructor(
     id: string,
     po_name: string,
@@ -147,6 +148,7 @@ export class OutputPortSwitch extends Port {
     po_device_class?: string,
   ) {
     super(id);
+    this._packageKind = PackageKind.SWITCH;
     this.vars["po_id"] = id;
     this.vars["po_name"] = po_name;
     if (po_device_class) this.vars["po_device_class"] = po_device_class;
