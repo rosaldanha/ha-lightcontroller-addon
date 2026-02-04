@@ -110,7 +110,7 @@ export abstract class Port {
   abstract readonly _packageKind: PackageKind;
   vars: Record<string, string | number> = {};
   constructor(id: string) {
-    super(id);
+    //super(id);
     this.vars["id"] = id;
   }
 }
