@@ -58,7 +58,7 @@ export default defineEventHandler(async (event) => {
       schema: ESPSCHEMA,
       //styles: { "!include": "original" },
       lineWidth: -1,
-      noRefs: true,
+      noRefs: false,
       replacer: (key, value) => {
         if (
           value == null ||

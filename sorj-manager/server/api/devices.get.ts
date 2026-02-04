@@ -3,7 +3,13 @@ import { defineEventHandler } from "h3";
 import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
-import { EsphomeConfig, ESPSCHEMA } from "../../utils/EsphomeConfig";
+import {
+  EsphomeDevice,
+  EsphomeConfig,
+  ESPSCHEMA,
+  OutputPortLight,
+  OutputPortSwitch,
+} from "../../utils/EsphomeConfig";
 import { useRuntimeConfig } from "#imports";
 import { MagicComment } from "../../utils/Constants";
 export default defineEventHandler(async (event) => {
@@ -31,10 +37,10 @@ export default defineEventHandler(async (event) => {
       const firstLine = fileContent.split("\n")[0].trim();
       if (firstLine === MagicComment) {
         try {
-          const data: EsphomeConfig = yaml.load(fs.readFileSync(filePath), {
+          const doc: EsphomeConfig = yaml.load(fs.readFileSync(filePath), {
             schema: ESPSCHEMA,
           });
-          configs.push(data);
+          configs.push(doc);
           // if (data && typeof data === "object") {
           //   const configInstance = EsphomeConfig.fromObject(data);
           //   configs.push(configInstance);
