@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const dataToDump = body;
-    console.log(JSON.stringify(dataToDump));
+
     // Manually reconstruct the 'packages' property with EsphomeInclude instances
     // if (dataToDump.packages) {
     //   for (const key in dataToDump.packages) {

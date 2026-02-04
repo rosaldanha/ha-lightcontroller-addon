@@ -3,7 +3,7 @@ import { defineEventHandler } from "h3";
 import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
-import { EsphomeConfig, ESPSCHEMA } from "~/utils/EsphomeConfig";
+import { EsphomeConfig, ESPSCHEMA } from "../../utils/EsphomeConfig";
 import { useRuntimeConfig } from "#imports";
 import { MagicComment } from "../../utils/Constants";
 export default defineEventHandler(async (event) => {
@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
         continue;
       }
       const filePath = path.join(configDir, file);
-      const fileContent = fs.readFileSync(filePath, "utf-8");
+      const fileContent = fs.readFileSync(filePath);
       const firstLine = fileContent.split("\n")[0].trim();
       if (firstLine === MagicComment) {
         try {

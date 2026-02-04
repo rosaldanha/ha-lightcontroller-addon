@@ -15,7 +15,7 @@ try {
       schema: ESPSCHEMA,
     },
   );
-  console.log(doc);
+  console.log(JSON.stringify(doc));
   console.log(yaml.dump(doc, { schema: ESPSCHEMA }));
 } catch (e) {
   console.log(e);
