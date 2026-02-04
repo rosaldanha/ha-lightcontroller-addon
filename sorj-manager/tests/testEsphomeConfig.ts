@@ -16,7 +16,25 @@ try {
     },
   );
   console.log(JSON.stringify(doc));
-  console.log(yaml.dump(doc, { schema: ESPSCHEMA }));
+  console.log(
+    yaml.dump(doc, {
+      schema: ESPSCHEMA,
+      //styles: { "!include": "original" },
+      lineWidth: -1,
+      noRefs: true,
+      replacer: (key, value) => {
+        if (
+          value == null ||
+          key.startsWith("_") ||
+          (Array.isArray(value) && value.length === 0)
+        ) {
+          return undefined;
+        } else {
+          return value;
+        }
+      },
+    }),
+  );
 } catch (e) {
   console.log(e);
 }
