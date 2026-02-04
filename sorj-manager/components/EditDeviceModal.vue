@@ -748,7 +748,7 @@ const removeSubDevice = (index: number) => {
       </div>
     </div>
   </div>
-  <pre>{{ formData.value }}</pre>
+  <pre>{{ formData }}</pre>
 </template>
 
 <style scoped>
