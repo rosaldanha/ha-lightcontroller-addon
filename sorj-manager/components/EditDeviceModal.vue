@@ -5,9 +5,9 @@ import {
   type EsphomeConfig,
   OutputPortLight,
   OutputPortSwitch,
-} from "~/utils/EsphomeConfig";
-import type { Port } from "~/utils/EsphomeConfig";
-import { PackageKind } from "~/utils/Constants";
+  Port,
+} from "../utils/EsphomeConfig";
+import { PackageKind } from "../utils/Constants";
 
 const props = defineProps<{
   show: boolean;

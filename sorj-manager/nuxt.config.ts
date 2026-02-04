@@ -4,7 +4,9 @@ import { defineNuxtConfig } from "nuxt/config";
 export default defineNuxtConfig({
   // 1. SPA Mode: Renderização apenas no navegador
   ssr: false,
-
+  define: {
+    __VUE_PROD_DEVTOOLS__: "true",
+  },
   devtools: { enabled: true },
   modules: ["@nuxtjs/tailwindcss"],
 
