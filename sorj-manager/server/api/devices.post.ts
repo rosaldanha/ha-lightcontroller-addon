@@ -29,7 +29,8 @@ export default defineEventHandler(async (event) => {
 
     const body = await readBody(event);
     console.log("**************** EVENT DIRECT PRINT **********************");
-    console.log(body);
+    console.log("Nome do construtor:", body.constructor.name);
+    console.log("Comparação direta:", body instanceof EsphomeConfig);
     if (!body || !body.substitutions || !body.substitutions.device_name) {
       throw new Error("Invalid EsphomeConfig object received.");
     }
