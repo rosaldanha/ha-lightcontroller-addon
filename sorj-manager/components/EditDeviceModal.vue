@@ -45,34 +45,29 @@ watch(
   (newDevice) => {
     if (newDevice) {
       const clonedDevice = JSON.parse(JSON.stringify(newDevice));
-      // Reconstruct class instances for packages, as they are lost in JSON serialization
+      // Reconstruct class instances for packages from the plain objects
       if (clonedDevice.packages) {
         for (const key in clonedDevice.packages) {
-          const pkgWrapper = clonedDevice.packages[key] as any;
-          if (!pkgWrapper || !pkgWrapper.data || !pkgWrapper.data.vars)
+          const pkg = clonedDevice.packages[key] as any;
+          if (!pkg || !pkg.data || !pkg.data.file || !pkg.data.vars) {
             continue;
+          }
 
-          const pkgData = pkgWrapper.data;
-
-          if (pkgData._packageKind === PackageKind.LIGHT) {
-            clonedDevice.packages[key] = {
-              data: new OutputPortLight(
-                pkgData.vars.po_id,
-                pkgData.vars.po_name,
-                pkgData.vars.po_device,
-                pkgData.vars.po_hub_id,
-                pkgData.vars.po_ph_id,
-              ),
-            };
-          } else if (pkgData._packageKind === PackageKind.SWITCH) {
-            clonedDevice.packages[key] = {
-              data: new OutputPortSwitch(
-                pkgData.vars.po_id,
-                pkgData.vars.po_name,
-                pkgData.vars.po_icon,
-                pkgData.vars.po_device_class,
-              ),
-            };
+          if (pkg.data.file.includes("light_kincony.yaml")) {
+            clonedDevice.packages[key] = new OutputPortLight(
+              pkg.data.vars.po_id,
+              pkg.data.vars.po_name,
+              pkg.data.vars.po_device,
+              pkg.data.vars.po_hub_id,
+              pkg.data.vars.po_ph_id,
+            );
+          } else if (pkg.data.file.includes("switch_kincony.yaml")) {
+            clonedDevice.packages[key] = new OutputPortSwitch(
+              pkg.data.vars.po_id,
+              pkg.data.vars.po_name,
+              pkg.data.vars.po_icon,
+              pkg.data.vars.po_device_class,
+            );
           }
         }
       }
@@ -97,11 +92,10 @@ const outputPackages = computed(() => {
       ([key, value]) =>
         key.startsWith("po") &&
         value &&
-        value.data &&
-        (value.data._packageKind === PackageKind.LIGHT ||
-          value.data._packageKind === PackageKind.SWITCH),
+        (value._packageKind === PackageKind.LIGHT ||
+          value._packageKind === PackageKind.SWITCH),
     )
-    .map(([key, value]) => ({ key, value: value as { data: Port } }))
+    .map(([key, value]) => ({ key, value: value as Port }))
     .sort((a, b) => {
       const numA = parseInt(a.key.substring(2), 10);
       const numB = parseInt(b.key.substring(2), 10);
@@ -142,20 +136,27 @@ const confirmAddOutput = () => {
   const key = newOutputPort.value;
   const type = newOutputType.value;
 
-  let newPort;
   if (type === "light") {
-    newPort = new OutputPortLight(key, `${key}_light`, "", "", 0);
+    formData.value.packages[key] = new OutputPortLight(
+      key,
+      `${key}_light`,
+      "",
+      "",
+      0,
+    );
   } else {
-    newPort = new OutputPortSwitch(key, `${key}_switch`, "");
+    formData.value.packages[key] = new OutputPortSwitch(
+      key,
+      `${key}_switch`,
+      "",
+    );
   }
-  formData.value.packages[key] = { data: newPort };
-
   cancelAddOutput(); // Reset form
 };
 
 const removeOutput = (key: string) => {
   if (!formData.value?.packages) return;
-  const portName = formData.value.packages[key]?.data?.vars?.po_name || key;
+  const portName = formData.value.packages[key]?.vars?.po_name || key;
   if (
     window.confirm(`Are you sure you want to delete the output "${portName}"?`)
   ) {
@@ -166,15 +167,13 @@ const removeOutput = (key: string) => {
 const onOutputTypeChange = (key: string, newType: "light" | "switch") => {
   if (!formData.value?.packages) return;
   const existingPackage = formData.value.packages[key];
-  const oldName = existingPackage?.data?.vars?.po_name || `${key}_${newType}`;
+  const oldName = existingPackage?.vars?.po_name || `${key}_${newType}`;
 
-  let newPort;
   if (newType === "light") {
-    newPort = new OutputPortLight(key, oldName, "", "", 0);
+    formData.value.packages[key] = new OutputPortLight(key, oldName, "", "", 0);
   } else {
-    newPort = new OutputPortSwitch(key, oldName, "");
+    formData.value.packages[key] = new OutputPortSwitch(key, oldName, "");
   }
-  formData.value.packages[key] = { data: newPort };
 };
 
 const validateSubDevices = () => {
@@ -613,7 +612,7 @@ const removeSubDevice = (index: number) => {
               </h4>
               <div class="flex items-center gap-4">
                 <select
-                  :value="pkg.value.data._packageKind"
+                  :value="pkg.value._packageKind"
                   @change="
                     onOutputTypeChange(
                       pkg.key,
@@ -637,7 +636,7 @@ const removeSubDevice = (index: number) => {
 
             <!-- Light Port Form -->
             <div
-              v-if="pkg.value.data._packageKind === PackageKind.LIGHT"
+              v-if="pkg.value._packageKind === PackageKind.LIGHT"
               class="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
               <div>
@@ -645,7 +644,7 @@ const removeSubDevice = (index: number) => {
                   >Name</label
                 >
                 <input
-                  v-model="pkg.value.data.vars.po_name"
+                  v-model="pkg.value.vars.po_name"
                   type="text"
                   class="input-field"
                 />
@@ -654,10 +653,7 @@ const removeSubDevice = (index: number) => {
                 <label class="block text-xs font-medium text-gray-400 mb-1"
                   >Sub-Device</label
                 >
-                <select
-                  v-model="pkg.value.data.vars.po_device"
-                  class="input-field"
-                >
+                <select v-model="pkg.value.vars.po_device" class="input-field">
                   <option value="">None</option>
                   <option
                     v-for="subId in subDeviceIds"
@@ -673,7 +669,7 @@ const removeSubDevice = (index: number) => {
                   >Hub ID</label
                 >
                 <input
-                  v-model="pkg.value.data.vars.po_hub_id"
+                  v-model="pkg.value.vars.po_hub_id"
                   type="text"
                   class="input-field"
                   placeholder="e.g. ${hub_out_1}"
@@ -684,7 +680,7 @@ const removeSubDevice = (index: number) => {
                   >Placeholder ID</label
                 >
                 <input
-                  v-model.number="pkg.value.data.vars.po_ph_id"
+                  v-model.number="pkg.value.vars.po_ph_id"
                   type="number"
                   class="input-field"
                 />
@@ -693,7 +689,7 @@ const removeSubDevice = (index: number) => {
 
             <!-- Switch Port Form -->
             <div
-              v-else-if="pkg.value.data._packageKind === PackageKind.SWITCH"
+              v-else-if="pkg.value._packageKind === PackageKind.SWITCH"
               class="grid grid-cols-1 md:grid-cols-3 gap-4"
             >
               <div class="md:col-span-2">
@@ -701,7 +697,7 @@ const removeSubDevice = (index: number) => {
                   >Name</label
                 >
                 <input
-                  v-model="pkg.value.data.vars.po_name"
+                  v-model="pkg.value.vars.po_name"
                   type="text"
                   class="input-field"
                 />
@@ -712,7 +708,7 @@ const removeSubDevice = (index: number) => {
                   >Icon</label
                 >
                 <input
-                  v-model="pkg.value.data.vars.po_icon"
+                  v-model="pkg.value.vars.po_icon"
                   type="text"
                   class="input-field"
                   placeholder="e.g. mdi:fan"
@@ -723,7 +719,7 @@ const removeSubDevice = (index: number) => {
                   >Device Class</label
                 >
                 <input
-                  v-model="pkg.value.data.vars.po_device_class"
+                  v-model="pkg.value.vars.po_device_class"
                   type="text"
                   class="input-field"
                   placeholder="e.g. switch"
