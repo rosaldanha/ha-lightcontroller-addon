@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Use the EsphomeConfig type for the request body
+    console.log(event);
     const body = await readBody<EsphomeConfig>(event);
 
     if (!body || !body.substitutions || !body.substitutions.device_name) {
