@@ -17,6 +17,8 @@ const {
   refresh,
 } = await useFetch<EsphomeConfig[]>("api/devices");
 
+alert(JSON.stringify(devices[0]));
+
 const openEditModal = (device: EsphomeConfig) => {
   console.log("Abrindo edição para:", device.substitutions.device_name);
   deviceToEdit.value = device;
