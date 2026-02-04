@@ -45,32 +45,7 @@ watch(
   (newDevice) => {
     if (newDevice) {
       const clonedDevice = JSON.parse(JSON.stringify(newDevice));
-      // Reconstruct class instances for packages from the plain objects
-      // if (clonedDevice.packages) {
-      //   for (const key in clonedDevice.packages) {
-      //     const pkg = clonedDevice.packages[key] as any;
-      //     if (!pkg || !pkg.data || !pkg.data.file || !pkg.data.vars) {
-      //       continue;
-      //     }
 
-      //     if (pkg.data.file.includes("light_kincony.yaml")) {
-      //       clonedDevice.packages[key] = new OutputPortLight(
-      //         pkg.data.vars.po_id,
-      //         pkg.data.vars.po_name,
-      //         pkg.data.vars.po_device,
-      //         pkg.data.vars.po_hub_id,
-      //         pkg.data.vars.po_ph_id,
-      //       );
-      //     } else if (pkg.data.file.includes("switch_kincony.yaml")) {
-      //       clonedDevice.packages[key] = new OutputPortSwitch(
-      //         pkg.data.vars.po_id,
-      //         pkg.data.vars.po_name,
-      //         pkg.data.vars.po_icon,
-      //         pkg.data.vars.po_device_class,
-      //       );
-      //     }
-      //   }
-      // }
       formData.value = clonedDevice;
       validationErrors.value.subdevices = {}; // Reset errors on new device
     } else {
