@@ -32,10 +32,11 @@ export default defineEventHandler(async (event) => {
       if (firstLine === MagicComment) {
         try {
           const data = yaml.load(fileContent, { schema: ESPSCHEMA });
-          if (data && typeof data === "object") {
-            const configInstance = EsphomeConfig.fromObject(data);
-            configs.push(configInstance);
-          }
+          configs.push(data);
+          // if (data && typeof data === "object") {
+          //   const configInstance = EsphomeConfig.fromObject(data);
+          //   configs.push(configInstance);
+          // }
         } catch (e) {
           console.error(`Error parsing YAML file ${file}:`, e);
           // Optionally, decide if you want to throw an error or just skip the file
