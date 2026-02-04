@@ -7,26 +7,6 @@ export class EsphomeInclude {
   constructor(public data: string | object) {}
 }
 
-// const includeScalar = new yaml.Type("!include", {
-//   kind: "scalar",
-//   construct: (data: any) => new EsphomeInclude(data),
-//   instanceOf: EsphomeInclude,
-//   represent: (entry: EsphomeInclude) => {
-//     if (typeof entry.data === "string") return entry.data;
-//     return yaml.DEFAULT_SQUENCE_STYLE; // Fallback for representing non-scalars
-//   },
-// });
-
-// const includeMapping = new yaml.Type("!include", {
-//   kind: "mapping",
-//   construct: (data: any) => new EsphomeInclude(data),
-//   instanceOf: EsphomeInclude,
-//   represent: (entry: EsphomeInclude) => {
-//     if (typeof entry.data === "object") return entry.data;
-//     return yaml.DEFAULT_SQUENCE_STYLE; // Fallback for representing non-mappings
-//   },
-// });
-
 // Definição para !include escalar (apenas string)
 const includeScalar = new yaml.Type("!include", {
   kind: "scalar",

@@ -58,7 +58,6 @@ const subDeviceIds = computed(() => {
   return formData.value.esphome.devices.map((d) => d.id).filter(Boolean);
 });
 
-// Computed for output packages
 const outputPackages = computed(() => {
   if (!formData.value?.packages) return [];
   return Object.entries(formData.value.packages)
@@ -66,10 +65,9 @@ const outputPackages = computed(() => {
       ([key, value]) =>
         key.startsWith("po") &&
         (value._packageKind === PackageKind.LIGHT ||
-          value._packageKind === PackageKind.SWITCH ||
-          (value as any).isNew), // (value as any).isNew is for new items
+          value._packageKind === PackageKind.SWITCH),
     )
-    .map(([key, value]) => ({ key, value: value as Port | any }))
+    .map(([key, value]) => ({ key, value: value as Port }))
     .sort((a, b) => {
       const numA = parseInt(a.key.substring(2), 10);
       const numB = parseInt(b.key.substring(2), 10);
@@ -77,19 +75,55 @@ const outputPackages = computed(() => {
     });
 });
 
-const addOutput = () => {
-  if (!formData.value?.packages) return;
+const isAddingOutput = ref(false);
+const newOutputPort = ref("");
+const newOutputType = ref<"light" | "switch" | "">("");
 
-  let nextPo = 1;
-  while (formData.value.packages[`po${nextPo}`]) {
-    nextPo++;
-  }
-  if (nextPo > 16) {
-    alert("Maximum number of 16 outputs reached.");
+const availableOutputPorts = computed(() => {
+  if (!formData.value?.packages) return [];
+  const allPorts = Array.from({ length: 16 }, (_, i) => `po${i + 1}`);
+  const usedPorts = Object.keys(formData.value.packages);
+  return allPorts.filter((p) => !usedPorts.includes(p));
+});
+
+const beginAddOutput = () => {
+  isAddingOutput.value = true;
+};
+
+const cancelAddOutput = () => {
+  isAddingOutput.value = false;
+  newOutputPort.value = "";
+  newOutputType.value = "";
+};
+
+const confirmAddOutput = () => {
+  if (
+    !formData.value?.packages ||
+    !newOutputPort.value ||
+    !newOutputType.value
+  ) {
+    alert("Please select a port and a type.");
     return;
   }
-  const newKey = `po${nextPo}`;
-  formData.value.packages[newKey] = { isNew: true, type: "" };
+  const key = newOutputPort.value;
+  const type = newOutputType.value;
+
+  if (type === "light") {
+    formData.value.packages[key] = new OutputPortLight(
+      key,
+      `${key}_light`,
+      "",
+      "",
+      0,
+    );
+  } else {
+    formData.value.packages[key] = new OutputPortSwitch(
+      key,
+      `${key}_switch`,
+      "",
+    );
+  }
+  cancelAddOutput(); // Reset form
 };
 
 const removeOutput = (key: string) => {
@@ -104,17 +138,13 @@ const removeOutput = (key: string) => {
 
 const onOutputTypeChange = (key: string, newType: "light" | "switch") => {
   if (!formData.value?.packages) return;
-  const id = key;
+  const existingPackage = formData.value.packages[key];
+  const oldName = existingPackage?.vars?.po_name || `${key}_${newType}`;
+
   if (newType === "light") {
-    formData.value.packages[key] = new OutputPortLight(
-      id,
-      `${id}_light`,
-      "",
-      "",
-      0,
-    );
+    formData.value.packages[key] = new OutputPortLight(key, oldName, "", "", 0);
   } else {
-    formData.value.packages[key] = new OutputPortSwitch(id, `${id}_switch`, "");
+    formData.value.packages[key] = new OutputPortSwitch(key, oldName, "");
   }
 };
 
@@ -472,17 +502,68 @@ const removeSubDevice = (index: number) => {
           v-else-if="activeTab === 'outputs' && formData"
           class="animate-fade-in space-y-4"
         >
-          <div class="flex justify-between items-center mb-2">
+          <div class="flex justify-between items-center mb-4">
             <p class="text-sm text-gray-400">
               Manage physical output ports (relays).
             </p>
             <button
-              @click="addOutput"
-              class="bg-esphome-accent hover:brightness-110 text-white px-4 py-2 rounded-md flex items-center text-sm font-semibold"
+              @click="beginAddOutput"
+              :disabled="isAddingOutput"
+              class="bg-esphome-accent hover:brightness-110 text-white px-4 py-2 rounded-md flex items-center text-sm font-semibold disabled:bg-gray-500 disabled:cursor-not-allowed"
             >
               <Icon icon="mdi:plus" class="mr-1 text-base" /> New
             </button>
           </div>
+
+          <!-- New Output Form -->
+          <div
+            v-if="isAddingOutput"
+            class="bg-gray-900/50 border border-esphome-accent/30 rounded-lg p-4 mb-4 space-y-3 animate-fade-in"
+          >
+            <h4 class="font-semibold text-white">Add New Output</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1"
+                  >Select Port</label
+                >
+                <select v-model="newOutputPort" class="input-field">
+                  <option disabled value="">Choose a port...</option>
+                  <option
+                    v-for="port in availableOutputPorts"
+                    :key="port"
+                    :value="port"
+                  >
+                    {{ port }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1"
+                  >Select Type</label
+                >
+                <select v-model="newOutputType" class="input-field">
+                  <option disabled value="">Choose a type...</option>
+                  <option value="light">Light</option>
+                  <option value="switch">Switch</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+              <button
+                @click="cancelAddOutput"
+                class="px-4 py-2 text-gray-300 hover:text-white text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                @click="confirmAddOutput"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium"
+              >
+                Confirm & Add
+              </button>
+            </div>
+          </div>
+
           <div
             v-if="!outputPackages || outputPackages.length === 0"
             class="text-center py-10 text-gray-500 italic border-2 border-dashed border-gray-700 rounded-lg"
@@ -495,42 +576,39 @@ const removeSubDevice = (index: number) => {
             :key="pkg.key"
             class="bg-gray-800 border border-gray-700 rounded-lg p-4 relative group"
           >
-            <div class="flex justify-between items-start mb-3">
+            <div
+              class="flex justify-between items-center border-b border-gray-700 pb-3 mb-3"
+            >
               <h4 class="font-bold text-lg text-gray-300 uppercase">
                 Output {{ pkg.key }}
               </h4>
-              <button
-                @click="removeOutput(pkg.key)"
-                class="text-gray-500 hover:text-red-400 opacity-50 hover:opacity-100 transition-opacity"
-              >
-                <Icon icon="mdi:trash-can-outline" class="text-lg" />
-              </button>
-            </div>
-
-            <!-- New Port Type Selector -->
-            <div v-if="pkg.value.isNew" class="flex items-center gap-4">
-              <label class="text-sm font-medium text-gray-400"
-                >Select Output Type:</label
-              >
-              <select
-                v-model="pkg.value.type"
-                @change="
-                  onOutputTypeChange(
-                    pkg.key,
-                    ($event.target as HTMLSelectElement)?.value as any,
-                  )
-                "
-                class="input-field"
-              >
-                <option disabled value="">Choose type...</option>
-                <option value="light">Light</option>
-                <option value="switch">Switch</option>
-              </select>
+              <div class="flex items-center gap-4">
+                <select
+                  :value="pkg.value._packageKind"
+                  @change="
+                    onOutputTypeChange(
+                      pkg.key,
+                      ($event.target as HTMLSelectElement)?.value as any,
+                    )
+                  "
+                  class="input-field bg-gray-700 text-sm"
+                  style="width: 120px"
+                >
+                  <option value="light">Light</option>
+                  <option value="switch">Switch</option>
+                </select>
+                <button
+                  @click="removeOutput(pkg.key)"
+                  class="text-gray-500 hover:text-red-400 opacity-50 hover:opacity-100 transition-opacity"
+                >
+                  <Icon icon="mdi:trash-can-outline" class="text-lg" />
+                </button>
+              </div>
             </div>
 
             <!-- Light Port Form -->
             <div
-              v-else-if="pkg.value._packageKind === PackageKind.LIGHT"
+              v-if="pkg.value._packageKind === PackageKind.LIGHT"
               class="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
               <div>
