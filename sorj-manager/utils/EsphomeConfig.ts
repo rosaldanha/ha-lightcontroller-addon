@@ -26,18 +26,55 @@ const includeScalar = new yaml.Type("!include", {
 // Definição para !include mapping (objeto/dicionário)
 const includeMapping = new yaml.Type("!include", {
   kind: "mapping",
-  construct: (data: any) => new EsphomeInclude(data),
 
-  // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for objeto
-  predicate: (obj: any) => {
-    return (
-      obj && obj._isEsphomeInclude === true && typeof obj.data === "object"
-    );
+  // Fábrica inteligente: Instancia a classe correta baseada no conteúdo do arquivo
+  construct: (data: any) => {
+    // Verifica se é o arquivo de LIGHT
+    if (data.file === "packages/KINCONY-KC868-A16/light_kincony.yaml") {
+      // Reconstrói o objeto Light (precisará adaptar para extrair vars de 'data')
+      // Como o objeto já vem pronto do YAML, podemos retornar uma instância "hidratada"
+      const instance = new OutputPortLight(
+        data.vars.po_id,
+        data.vars.po_name,
+        data.vars.po_device,
+        data.vars.po_hub_id,
+        data.vars.po_ph_id,
+      );
+      // Garante que outras vars sejam preservadas se houver
+      instance.vars = data.vars;
+      return instance;
+    }
+
+    // Verifica se é o arquivo de SWITCH
+    if (data.file === "packages/KINCONY-KC868-A16/switch_kincony.yaml") {
+      const instance = new OutputPortSwitch(data.vars.po_id, data.vars.po_name);
+      instance.vars = data.vars;
+      return instance;
+    }
+
+    // Caso padrão genérico
+    return new EsphomeInclude(data);
   },
-  represent: (entry: EsphomeInclude) => {
-    return entry.data;
+
+  predicate: (obj: any) => {
+    // Atualize o predicate para checar a propriedade oculta também, se necessário,
+    // ou apenas verifique se é um objeto que não seja null
+    return obj && typeof obj === "object";
+  },
+
+  // Agora o represent fica simples, pois as propriedades internas já são as corretas
+  represent: (entry: any) => {
+    // Se for EsphomeInclude genérico, retorna .data
+    if (entry instanceof EsphomeInclude) return entry.data;
+
+    // Se for suas classes Port, retorne o objeto com file e vars
+    return {
+      file: entry.file,
+      vars: entry.vars,
+    };
   },
 });
+//----------------------------- Test with light ------------------------------------------------
 
 export const ESPSCHEMA = yaml.DEFAULT_SCHEMA.extend([
   includeScalar,
