@@ -31,7 +31,9 @@ export default defineEventHandler(async (event) => {
       const firstLine = fileContent.split("\n")[0].trim();
       if (firstLine === MagicComment) {
         try {
-          const data = yaml.load(fileContent, { schema: ESPSCHEMA });
+          const data: EsphomeConfig = yaml.load(fileContent, {
+            schema: ESPSCHEMA,
+          });
           configs.push(data);
           // if (data && typeof data === "object") {
           //   const configInstance = EsphomeConfig.fromObject(data);
