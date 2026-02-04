@@ -3,6 +3,7 @@ import { PackageKind } from "./Constants";
 
 export class EsphomeInclude {
   readonly _packageKind: PackageKind = PackageKind.INCLUDE;
+  readonly _isEsphomeInclude: boolean = true;
   constructor(public data: string | object) {}
 }
 
@@ -30,10 +31,12 @@ export class EsphomeInclude {
 const includeScalar = new yaml.Type("!include", {
   kind: "scalar",
   construct: (data: any) => new EsphomeInclude(data),
-  instanceOf: EsphomeInclude,
+
   // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for string
-  predicate: (object: any) => {
-    return object instanceof EsphomeInclude && typeof object.data === "string";
+  predicate: (obj: any) => {
+    return (
+      obj && obj._isEsphomeInclude === true && typeof obj.data === "string"
+    );
   },
   represent: (entry: EsphomeInclude) => {
     return entry.data;
@@ -44,10 +47,12 @@ const includeScalar = new yaml.Type("!include", {
 const includeMapping = new yaml.Type("!include", {
   kind: "mapping",
   construct: (data: any) => new EsphomeInclude(data),
-  instanceOf: EsphomeInclude,
+
   // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for objeto
-  predicate: (object: any) => {
-    return object instanceof EsphomeInclude && typeof object.data === "object";
+  predicate: (obj: any) => {
+    return (
+      obj && obj._isEsphomeInclude === true && typeof obj.data === "object"
+    );
   },
   represent: (entry: EsphomeInclude) => {
     return entry.data;
