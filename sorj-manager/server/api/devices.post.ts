@@ -2,11 +2,7 @@ import { defineEventHandler, readBody } from "h3";
 import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
-import {
-  EsphomeConfig,
-  ESPSCHEMA,
-  EsphomeInclude,
-} from "~/utils/EsphomeConfig";
+import { EsphomeConfig, ESPSCHEMA } from "../../utils/EsphomeConfig";
 import { MagicComment } from "../../utils/Constants";
 
 export default defineEventHandler(async (event) => {
