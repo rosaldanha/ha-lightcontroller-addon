@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
     // Use the EsphomeConfig type for the request body
 
-    const body = await readBody(event);
+    const body = await readBody<EsphomeConfig>(event);
     console.log("**************** EVENT DIRECT PRINT **********************");
     console.log("Nome do construtor:", body.constructor.name);
     console.log("Comparação direta:", body instanceof EsphomeConfig);
