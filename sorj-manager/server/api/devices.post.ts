@@ -52,7 +52,7 @@ export default defineEventHandler(async (event) => {
     // }
     const yamlString = yaml.dump(dataToDump, {
       schema: ESPSCHEMA,
-      styles: { "!include": "original" },
+      //styles: { "!include": "original" },
       lineWidth: -1,
       noRefs: true,
       replacer: (key, value) => {
