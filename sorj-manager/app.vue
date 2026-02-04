@@ -19,7 +19,6 @@ const {
 
 const openEditModal = (device: EsphomeConfig) => {
   console.log("Abrindo edição para:", device.substitutions.device_name);
-  console.log(JSON.stringify(device));
   deviceToEdit.value = device;
   showEditModal.value = true;
 };
