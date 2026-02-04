@@ -52,6 +52,20 @@ export default defineEventHandler(async (event) => {
     // }
     const yamlString = yaml.dump(dataToDump, {
       schema: ESPSCHEMA,
+      styles: { "!include": "original" },
+      lineWidth: -1,
+      noRefs: true,
+      replacer: (key, value) => {
+        if (
+          value == null ||
+          key.startsWith("_") ||
+          (Array.isArray(value) && value.length === 0)
+        ) {
+          return undefined;
+        } else {
+          return value;
+        }
+      },
     });
     const finalYaml = MagicComment + "\n" + yamlString;
     const deviceName = dataToDump.substitutions.device_name;
