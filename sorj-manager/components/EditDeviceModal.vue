@@ -44,7 +44,32 @@ watch(
   () => props.device,
   (newDevice) => {
     if (newDevice) {
-      formData.value = JSON.parse(JSON.stringify(newDevice));
+      const clonedDevice = JSON.parse(JSON.stringify(newDevice));
+      // Reconstruct class instances for packages, as they are lost in JSON serialization
+      if (clonedDevice.packages) {
+        for (const key in clonedDevice.packages) {
+          const pkg = clonedDevice.packages[key] as any;
+          if (!pkg || !pkg.vars) continue;
+
+          if (pkg._packageKind === PackageKind.LIGHT) {
+            clonedDevice.packages[key] = new OutputPortLight(
+              pkg.vars.po_id,
+              pkg.vars.po_name,
+              pkg.vars.po_device,
+              pkg.vars.po_hub_id,
+              pkg.vars.po_ph_id,
+            );
+          } else if (pkg._packageKind === PackageKind.SWITCH) {
+            clonedDevice.packages[key] = new OutputPortSwitch(
+              pkg.vars.po_id,
+              pkg.vars.po_name,
+              pkg.vars.po_icon,
+              pkg.vars.po_device_class,
+            );
+          }
+        }
+      }
+      formData.value = clonedDevice;
       validationErrors.value.subdevices = {}; // Reset errors on new device
     } else {
       formData.value = undefined;
