@@ -105,7 +105,7 @@ export class Substitutions {
     this.device_static_ip = ip;
   }
 }
-export abstract class Port extends EsphomeInclude {
+export abstract class Port {
   abstract readonly file: string;
   abstract readonly _packageKind: PackageKind;
   vars: Record<string, string | number> = {};
