@@ -98,11 +98,7 @@ const includeStringNew = new yaml.Type("!include", {
   instanceOf: EsphomeInclude,
   // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for string
   predicate: (object: any) => {
-    return (
-      object.data &&
-      typeof object.data === "string" &&
-      object.data.toLowerCase().includes("packages")
-    );
+    return object.data && typeof object.data === "string";
   },
   represent: (entry: any) => {
     return entry.data;
