@@ -76,7 +76,12 @@ const includeMapping = new yaml.Type("!include", {
   // Agora o represent fica simples, pois as propriedades internas já são as corretas
   represent: (entry: any) => {
     // Se for EsphomeInclude genérico, retorna .data
-    if (entry instanceof EsphomeInclude) return entry.data;
+    if (
+      entry.data &&
+      typeof entry.data === "string" &&
+      entry.data === "packages/KINCONY-KC868-A16/base.yaml"
+    )
+      return entry.data;
 
     // Se for suas classes Port, retorne o objeto com file e vars
     return {
@@ -85,12 +90,53 @@ const includeMapping = new yaml.Type("!include", {
     };
   },
 });
-//----------------------------- Test with light ------------------------------------------------
+// ======================================= use this =======================================================
+// Definição para !include escalar (apenas string)
+const includeStringNew = new yaml.Type("!include", {
+  kind: "scalar",
+  construct: (data: any) => new EsphomeInclude(data),
+  instanceOf: EsphomeInclude,
+  // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for string
+  predicate: (object: any) => {
+    return (
+      object.data &&
+      typeof object.data === "string" &&
+      object.data.toLowerCase().includes("packages")
+    );
+  },
+  represent: (entry: EsphomeInclude) => {
+    return entry.data;
+  },
+});
+
+// Definição para !include mapping (objeto/dicionário)
+const includeMappingNew = new yaml.Type("!include", {
+  kind: "mapping",
+  construct: (data: any) => new EsphomeInclude(data),
+  instanceOf: EsphomeInclude,
+  // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for objeto
+  predicate: (object: any) => {
+    return (
+      object.data &&
+      typeof object.data === "object" &&
+      object.data.file &&
+      typeof object.data.file === "string" &&
+      object.data.file.toLowerCase().includes("packages")
+    ); // o problema está em reconhecer o tipo do objeto no servidor, então preciso testar se existem determinadas variáveis
+  },
+  represent: (entry: EsphomeInclude) => {
+    return entry.data;
+  },
+});
 
 export const ESPSCHEMA = yaml.DEFAULT_SCHEMA.extend([
-  includeScalar,
-  includeMapping,
+  //includeScalar,
+  //includeMapping,
+  includeMappingNew,
+  includeStringNew,
 ]);
+
+//----------------------------- Test with light ------------------------------------------------
 
 export class Substitutions {
   device_name: string = "";
