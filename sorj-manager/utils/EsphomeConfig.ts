@@ -7,89 +7,89 @@ export class EsphomeInclude {
   constructor(public data: string | object) {}
 }
 
-// Definição para !include escalar (apenas string)
-const includeScalar = new yaml.Type("!include", {
-  kind: "scalar",
-  construct: (data: any) => new EsphomeInclude(data),
+// // Definição para !include escalar (apenas string)
+// const includeScalar = new yaml.Type("!include", {
+//   kind: "scalar",
+//   construct: (data: any) => new EsphomeInclude(data),
 
-  // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for string
-  predicate: (obj: any) => {
-    return (
-      obj &&
-      obj.data &&
-      typeof obj.data === "string" &&
-      obj.data === "packages/KINCONY-KC868-A16/base.yaml"
-    );
-  },
-  represent: (entry: EsphomeInclude) => {
-    return entry.data;
-  },
-});
+//   // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for string
+//   predicate: (obj: any) => {
+//     return (
+//       obj &&
+//       obj.data &&
+//       typeof obj.data === "string" &&
+//       obj.data === "packages/KINCONY-KC868-A16/base.yaml"
+//     );
+//   },
+//   represent: (entry: EsphomeInclude) => {
+//     return entry.data;
+//   },
+// });
 
-// Definição para !include mapping (objeto/dicionário)
-const includeMapping = new yaml.Type("!include", {
-  kind: "mapping",
+// // Definição para !include mapping (objeto/dicionário)
+// const includeMapping = new yaml.Type("!include", {
+//   kind: "mapping",
 
-  // Fábrica inteligente: Instancia a classe correta baseada no conteúdo do arquivo
-  construct: (data: any) => {
-    // Verifica se é o arquivo de LIGHT
-    if (
-      data &&
-      data.file &&
-      data.file === "packages/KINCONY-KC868-A16/light_kincony.yaml"
-    ) {
-      // Reconstrói o objeto Light (precisará adaptar para extrair vars de 'data')
-      // Como o objeto já vem pronto do YAML, podemos retornar uma instância "hidratada"
-      const instance = new OutputPortLight(
-        data.vars.po_id,
-        data.vars.po_name,
-        data.vars.po_device,
-        data.vars.po_hub_id,
-        data.vars.po_ph_id,
-      );
-      // Garante que outras vars sejam preservadas se houver
-      instance.vars = data.vars;
-      return instance;
-    }
+//   // Fábrica inteligente: Instancia a classe correta baseada no conteúdo do arquivo
+//   construct: (data: any) => {
+//     // Verifica se é o arquivo de LIGHT
+//     if (
+//       data &&
+//       data.file &&
+//       data.file === "packages/KINCONY-KC868-A16/light_kincony.yaml"
+//     ) {
+//       // Reconstrói o objeto Light (precisará adaptar para extrair vars de 'data')
+//       // Como o objeto já vem pronto do YAML, podemos retornar uma instância "hidratada"
+//       const instance = new OutputPortLight(
+//         data.vars.po_id,
+//         data.vars.po_name,
+//         data.vars.po_device,
+//         data.vars.po_hub_id,
+//         data.vars.po_ph_id,
+//       );
+//       // Garante que outras vars sejam preservadas se houver
+//       instance.vars = data.vars;
+//       return instance;
+//     }
 
-    // Verifica se é o arquivo de SWITCH
-    if (
-      data &&
-      data.file &&
-      data.file === "packages/KINCONY-KC868-A16/switch_kincony.yaml"
-    ) {
-      const instance = new OutputPortSwitch(data.vars.po_id, data.vars.po_name);
-      instance.vars = data.vars;
-      return instance;
-    }
+//     // Verifica se é o arquivo de SWITCH
+//     if (
+//       data &&
+//       data.file &&
+//       data.file === "packages/KINCONY-KC868-A16/switch_kincony.yaml"
+//     ) {
+//       const instance = new OutputPortSwitch(data.vars.po_id, data.vars.po_name);
+//       instance.vars = data.vars;
+//       return instance;
+//     }
 
-    // Caso padrão genérico
-    return new EsphomeInclude(data);
-  },
+//     // Caso padrão genérico
+//     return new EsphomeInclude(data);
+//   },
 
-  predicate: (obj: any) => {
-    // Atualize o predicate para checar a propriedade oculta também, se necessário,
-    // ou apenas verifique se é um objeto que não seja null
-    return obj && typeof obj === "object";
-  },
+//   predicate: (obj: any) => {
+//     // Atualize o predicate para checar a propriedade oculta também, se necessário,
+//     // ou apenas verifique se é um objeto que não seja null
+//     return obj && typeof obj === "object";
+//   },
 
-  // Agora o represent fica simples, pois as propriedades internas já são as corretas
-  represent: (entry: any) => {
-    // Se for EsphomeInclude genérico, retorna .data
-    if (
-      entry.data &&
-      typeof entry.data === "string" &&
-      entry.data === "packages/KINCONY-KC868-A16/base.yaml"
-    )
-      return entry.data;
+//   // Agora o represent fica simples, pois as propriedades internas já são as corretas
+//   represent: (entry: any) => {
+//     // Se for EsphomeInclude genérico, retorna .data
+//     if (
+//       entry.data &&
+//       typeof entry.data === "string" &&
+//       entry.data === "packages/KINCONY-KC868-A16/base.yaml"
+//     )
+//       return entry.data;
 
-    // Se for suas classes Port, retorne o objeto com file e vars
-    return {
-      file: entry.file,
-      vars: entry.vars,
-    };
-  },
-});
+//     // Se for suas classes Port, retorne o objeto com file e vars
+//     return {
+//       file: entry.file,
+//       vars: entry.vars,
+//     };
+//   },
+// });
 // ======================================= use this =======================================================
 // Definição para !include escalar (apenas string)
 const includeStringNew = new yaml.Type("!include", {
@@ -104,7 +104,7 @@ const includeStringNew = new yaml.Type("!include", {
       object.data.toLowerCase().includes("packages")
     );
   },
-  represent: (entry: EsphomeInclude) => {
+  represent: (entry: any) => {
     return entry.data;
   },
 });
@@ -124,7 +124,7 @@ const includeMappingNew = new yaml.Type("!include", {
       object.data.file.toLowerCase().includes("packages")
     ); // o problema está em reconhecer o tipo do objeto no servidor, então preciso testar se existem determinadas variáveis
   },
-  represent: (entry: EsphomeInclude) => {
+  represent: (entry: any) => {
     return entry.data;
   },
 });
