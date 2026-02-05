@@ -15,7 +15,10 @@ const includeScalar = new yaml.Type("!include", {
   // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for string
   predicate: (obj: any) => {
     return (
-      obj && obj._isEsphomeInclude === true && typeof obj.data === "string"
+      obj &&
+      obj.data &&
+      typeof obj.data === "string" &&
+      obj.data === "packages/KINCONY-KC868-A16/base.yaml"
     );
   },
   represent: (entry: EsphomeInclude) => {
@@ -30,7 +33,11 @@ const includeMapping = new yaml.Type("!include", {
   // Fábrica inteligente: Instancia a classe correta baseada no conteúdo do arquivo
   construct: (data: any) => {
     // Verifica se é o arquivo de LIGHT
-    if (data.file === "packages/KINCONY-KC868-A16/light_kincony.yaml") {
+    if (
+      data &&
+      data.file &&
+      data.file === "packages/KINCONY-KC868-A16/light_kincony.yaml"
+    ) {
       // Reconstrói o objeto Light (precisará adaptar para extrair vars de 'data')
       // Como o objeto já vem pronto do YAML, podemos retornar uma instância "hidratada"
       const instance = new OutputPortLight(
@@ -46,7 +53,11 @@ const includeMapping = new yaml.Type("!include", {
     }
 
     // Verifica se é o arquivo de SWITCH
-    if (data.file === "packages/KINCONY-KC868-A16/switch_kincony.yaml") {
+    if (
+      data &&
+      data.file &&
+      data.file === "packages/KINCONY-KC868-A16/switch_kincony.yaml"
+    ) {
       const instance = new OutputPortSwitch(data.vars.po_id, data.vars.po_name);
       instance.vars = data.vars;
       return instance;
