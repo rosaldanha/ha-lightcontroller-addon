@@ -120,8 +120,7 @@ const includeMappingNew = new yaml.Type("!include", {
       object.data &&
       typeof object.data === "object" &&
       object.data.file &&
-      typeof object.data.file === "string" &&
-      object.data.file.toLowerCase().includes("packages")
+      typeof object.data.file === "string"
     ); // o problema está em reconhecer o tipo do objeto no servidor, então preciso testar se existem determinadas variáveis
   },
   represent: (entry: any) => {
