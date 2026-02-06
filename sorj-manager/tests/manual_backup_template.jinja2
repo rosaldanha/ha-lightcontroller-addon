@@ -1,0 +1,19 @@
+{{ device_attr('979e4324103362d2bdf8c47b0c0bfee1', 'via_device_id') }}
+{{ is_device_attr('979e4324103362d2bdf8c47b0c0bfee1','via_device_id','514aefbebb99f2586b10f1317e848dde') }}
+
+{%- set target_via_id = device_id('lightcontroller0101') -%}
+{%- set ns = namespace(found_entities=[]) -%}
+
+{# Varre todas as entidades #}
+{%- for state in states -%}
+  {# 1. Descobre o ID do dispositivo desta entidade #}
+  {%- set dev_id = device_id(state.entity_id) -%}
+  {# 2. Se tem dispositivo, verifica se o 'pai' dele é o nosso alvo #}
+  {%- if dev_id and (is_device_attr(dev_id, 'via_device_id', target_via_id) or target_via_id == dev_id )
+      and (state.entity_id.startswith('sensor.') or state.entity_id.startswith('text.')) -%}
+    {%- set ns.found_entities = ns.found_entities + [state.entity_id+';'+state.state] -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{# Resultado #}
+{{ ns.found_entities | join('\n') }}

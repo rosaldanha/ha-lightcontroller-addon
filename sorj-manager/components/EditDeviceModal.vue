@@ -112,12 +112,16 @@ const confirmAddOutput = () => {
   const type = newOutputType.value;
 
   if (type === "light") {
+    const portNumber = parseInt(key.substring(2), 10);
+    const ph_id = portNumber - 1;
+    const hub_id =
+      portNumber >= 1 && portNumber <= 8 ? "${hub_out_1}" : "${hub_out_2}";
     formData.value.packages[key] = new OutputPortLight(
       key,
       `${key}_light`,
       "",
-      "",
-      0,
+      hub_id,
+      ph_id,
     );
   } else {
     formData.value.packages[key] = new OutputPortSwitch(
@@ -652,7 +656,7 @@ const removeSubDevice = (index: number) => {
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-400 mb-1"
-                  >Placeholder ID</label
+                  >Phisical ID</label
                 >
                 <input
                   v-model.number="pkg.value.vars.po_ph_id"
