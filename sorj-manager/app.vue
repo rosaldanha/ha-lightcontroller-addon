@@ -48,7 +48,7 @@ const openNewDeviceModal = () => {
       <div
         class="flex items-center space-x-4 text-sm font-medium text-gray-300"
       >
-        <button
+        <!-- <button
           @click="refresh()"
           class="hover:text-white flex items-center transition-colors"
         >
@@ -58,7 +58,7 @@ const openNewDeviceModal = () => {
             :class="{ 'animate-spin': pending }"
           />
           REFRESH ALL
-        </button>
+        </button> -->
         <button
           @click="showMonitorModal = true"
           class="hover:text-white transition-colors hidden md:block"
