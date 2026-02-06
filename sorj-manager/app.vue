@@ -41,9 +41,7 @@ const openNewDeviceModal = () => {
     >
       <div class="flex items-center space-x-3">
         <Icon icon="mdi:chip" class="text-3xl text-esphome-accent" />
-        <h1 class="text-xl font-semibold tracking-wide">
-          Sorj-Net LightControllers
-        </h1>
+        <h1 class="text-lg font-semibold tracking-wide">LightControllers</h1>
       </div>
       <div
         class="flex items-center space-x-4 text-sm font-medium text-gray-300"
