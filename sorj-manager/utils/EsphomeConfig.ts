@@ -39,7 +39,7 @@ const includeMappingPorts = new yaml.Type("!include", {
   construct: (object: any) => {
     if (object.file.toLowerCase().includes("light_kincony.yaml"))
       return new OutputPortLight(
-        object.vars.id,
+        object.vars.po_id,
         object.vars.po_name,
         object.vars.po_device,
         object.vars.po_hub_id,
@@ -47,7 +47,7 @@ const includeMappingPorts = new yaml.Type("!include", {
       );
     if (object.file.toLowerCase().includes("switch_kincony.yaml"))
       return new OutputPortSwitch(
-        object.vars.id,
+        object.vars.po_id,
         object.vars.po_name,
         object.vars.po_icon,
         object.vars.po_device_class,
@@ -182,7 +182,7 @@ export abstract class Port {
   vars: Record<string, string | number> = {};
   constructor(id: string) {
     //super(id);
-    this.vars["id"] = id;
+    this.vars["po_id"] = id;
   }
 }
 export class InputPort extends Port {
@@ -202,7 +202,7 @@ export class OutputPortLight extends Port {
   ) {
     super(id);
     this._packageKind = PackageKind.LIGHT;
-    this.vars["po_id"] = id;
+
     this.vars["po_name"] = po_name;
     this.vars["po_device"] = po_device;
     this.vars["po_hub_id"] = po_hub_id;
@@ -220,10 +220,12 @@ export class OutputPortSwitch extends Port {
   ) {
     super(id);
     this._packageKind = PackageKind.SWITCH;
-    this.vars["po_id"] = id;
+
     this.vars["po_name"] = po_name;
     if (po_device_class) this.vars["po_device_class"] = po_device_class;
+    else this.vars["po_device_class"] = "";
     if (po_icon) this.vars["po_icon"] = po_icon;
+    else this.vars["po_icon"] = "";
   }
 }
 export class EsphomeDevice {

@@ -15,7 +15,11 @@ try {
       schema: ESPSCHEMA,
     },
   );
-  console.log(JSON.stringify(doc));
+  console.log(
+    "STRINFIED VERSION OF DOC: --------------------",
+    JSON.stringify(doc),
+  );
+  console.log("END STRINFIED VERSION OF DOC: --------------------");
   console.log(
     yaml.dump(doc, {
       schema: ESPSCHEMA,
