@@ -64,9 +64,7 @@ const includeMappingPorts = new yaml.Type("!include", {
         "includeMappingPorts IS_FILE_STRING_TRUE: ",
         JSON.stringify(object),
       );
-    return (
-      isFileString && object.file.toLowerCase().includes("light_kincony.yaml")
-    ); // o problema está em reconhecer o tipo do objeto no servidor, então preciso testar se existem determinadas variáveis
+    return isFileString; // o problema está em reconhecer o tipo do objeto no servidor, então preciso testar se existem determinadas variáveis
   },
   represent: (entry: any) => {
     console.log("REPRESENT_includeMappingPorts", JSON.stringify(entry));
@@ -111,11 +109,7 @@ const includeMappingPorts = new yaml.Type("!include", {
 // });
 
 export const ESPSCHEMA = yaml.DEFAULT_SCHEMA.extend([
-  //includeScalar,
-
   includeMappingPorts,
-
-  //includeMappingNew,
   includeStringNew,
 ]);
 
