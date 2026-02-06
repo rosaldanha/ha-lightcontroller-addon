@@ -7,127 +7,115 @@ export class EsphomeInclude {
   constructor(public data: string | object) {}
 }
 
-// // Definição para !include escalar (apenas string)
-// const includeScalar = new yaml.Type("!include", {
-//   kind: "scalar",
-//   construct: (data: any) => new EsphomeInclude(data),
+// ======================================= use this =======================================================
+// Definição para !include escalar (apenas string)
+const includeStringNew = new yaml.Type("!include", {
+  kind: "scalar",
+  resolve: (object: any) => {
+    return typeof object === "string";
+  },
+  construct: (data: any) => new EsphomeInclude(data),
 
-//   // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for string
-//   predicate: (obj: any) => {
-//     return (
-//       obj &&
-//       obj.data &&
-//       typeof obj.data === "string" &&
-//       obj.data === "packages/KINCONY-KC868-A16/base.yaml"
-//     );
-//   },
-//   represent: (entry: EsphomeInclude) => {
-//     return entry.data;
-//   },
-// });
+  // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for string
+  predicate: (object: any) => {
+    const isFileString = object?.data && typeof object.data === "string";
+    return isFileString && object.data.toLowerCase().includes("base.yaml");
+  },
+  represent: (entry: any) => {
+    console.log("REPRESENT_INCLUDESTRINGNEW", JSON.stringify(entry));
+    return entry.data;
+  },
+});
+// https://gemini.google.com/share/8b0cf77d2ba9
+const includeMappingPorts = new yaml.Type("!include", {
+  kind: "mapping",
+  resolve: (object: any) => {
+    // Verifica se tem a propriedade obrigatória 'file'
+    if (object !== null && typeof object.file === "string")
+      console.log("RESOLVING...", JSON.stringify(object));
+    return object !== null && typeof object.file === "string";
+  },
+  // testar o tipo e criar aqui. não criar multiplas tags com !include.
+  construct: (object: any) => {
+    if (object.file.toLowerCase().includes("light_kincony.yaml"))
+      return new OutputPortLight(
+        object.vars.id,
+        object.vars.po_name,
+        object.vars.po_device,
+        object.vars.po_hub_id,
+        object.vars.po_ph_id,
+      );
+    if (object.file.toLowerCase().includes("switch_kincony.yaml"))
+      return new OutputPortSwitch(
+        object.vars.id,
+        object.vars.po_name,
+        object.vars.po_icon,
+        object.vars.po_device_class,
+      );
+  },
+  // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for objeto
+  predicate: (object: any) => {
+    const isFileString =
+      object?.file &&
+      typeof object === "object" &&
+      typeof object.file === "string";
+    if (isFileString)
+      console.log(
+        "includeMappingPorts IS_FILE_STRING_TRUE: ",
+        JSON.stringify(object),
+      );
+    return (
+      isFileString && object.file.toLowerCase().includes("light_kincony.yaml")
+    ); // o problema está em reconhecer o tipo do objeto no servidor, então preciso testar se existem determinadas variáveis
+  },
+  represent: (entry: any) => {
+    console.log("REPRESENT_includeMappingPorts", JSON.stringify(entry));
+    return {
+      file: entry.file,
+      vars: entry.vars,
+    };
+  },
+});
 
-// // Definição para !include mapping (objeto/dicionário)
-// const includeMapping = new yaml.Type("!include", {
+// const includeMappingSwitch = new yaml.Type("!include", {
 //   kind: "mapping",
-
-//   // Fábrica inteligente: Instancia a classe correta baseada no conteúdo do arquivo
-//   construct: (data: any) => {
-//     // Verifica se é o arquivo de LIGHT
-//     if (
-//       data &&
-//       data.file &&
-//       data.file === "packages/KINCONY-KC868-A16/light_kincony.yaml"
-//     ) {
-//       // Reconstrói o objeto Light (precisará adaptar para extrair vars de 'data')
-//       // Como o objeto já vem pronto do YAML, podemos retornar uma instância "hidratada"
-//       const instance = new OutputPortLight(
-//         data.vars.po_id,
-//         data.vars.po_name,
-//         data.vars.po_device,
-//         data.vars.po_hub_id,
-//         data.vars.po_ph_id,
+//   construct: (data: any) =>
+//     new OutputPortSwitch(
+//       data.id,
+//       data.po_name,
+//       data.po_icon,
+//       data.po_device_class,
+//     ),
+//   // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for objeto
+//   predicate: (object: any) => {
+//     const isFileString =
+//       object?.file &&
+//       typeof object === "object" &&
+//       typeof object.file === "string";
+//     if (isFileString)
+//       console.log(
+//         "includeMappingSwitch IS_FILE_STRING_TRUE: ",
+//         JSON.stringify(object),
 //       );
-//       // Garante que outras vars sejam preservadas se houver
-//       instance.vars = data.vars;
-//       return instance;
-//     }
-
-//     // Verifica se é o arquivo de SWITCH
-//     if (
-//       data &&
-//       data.file &&
-//       data.file === "packages/KINCONY-KC868-A16/switch_kincony.yaml"
-//     ) {
-//       const instance = new OutputPortSwitch(data.vars.po_id, data.vars.po_name);
-//       instance.vars = data.vars;
-//       return instance;
-//     }
-
-//     // Caso padrão genérico
-//     return new EsphomeInclude(data);
+//     return (
+//       isFileString && object.file.toLowerCase().includes("switch_kincony.yaml")
+//     ); // o problema está em reconhecer o tipo do objeto no servidor, então preciso testar se existem determinadas variáveis
 //   },
-
-//   predicate: (obj: any) => {
-//     // Atualize o predicate para checar a propriedade oculta também, se necessário,
-//     // ou apenas verifique se é um objeto que não seja null
-//     return obj && typeof obj === "object";
-//   },
-
-//   // Agora o represent fica simples, pois as propriedades internas já são as corretas
 //   represent: (entry: any) => {
-//     // Se for EsphomeInclude genérico, retorna .data
-//     if (
-//       entry.data &&
-//       typeof entry.data === "string" &&
-//       entry.data === "packages/KINCONY-KC868-A16/base.yaml"
-//     )
-//       return entry.data;
-
-//     // Se for suas classes Port, retorne o objeto com file e vars
+//     console.log("REPRESENT_includeMappingSwitch", JSON.stringify(entry));
 //     return {
 //       file: entry.file,
 //       vars: entry.vars,
 //     };
 //   },
 // });
-// ======================================= use this =======================================================
-// Definição para !include escalar (apenas string)
-const includeStringNew = new yaml.Type("!include", {
-  kind: "scalar",
-  construct: (data: any) => new EsphomeInclude(data),
-  instanceOf: EsphomeInclude,
-  // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for string
-  predicate: (object: any) => {
-    return object.data && typeof object.data === "string";
-  },
-  represent: (entry: any) => {
-    return entry.data;
-  },
-});
-
-// Definição para !include mapping (objeto/dicionário)
-const includeMappingNew = new yaml.Type("!include", {
-  kind: "mapping",
-  construct: (data: any) => new EsphomeInclude(data),
-  instanceOf: EsphomeInclude,
-  // O PREDICATE É A CHAVE: Só usa este tipo se 'data' for objeto
-  predicate: (object: any) => {
-    return (
-      object.data &&
-      typeof object.data === "object" &&
-      object.data.file &&
-      typeof object.data.file === "string"
-    ); // o problema está em reconhecer o tipo do objeto no servidor, então preciso testar se existem determinadas variáveis
-  },
-  represent: (entry: any) => {
-    return entry.data;
-  },
-});
 
 export const ESPSCHEMA = yaml.DEFAULT_SCHEMA.extend([
   //includeScalar,
-  //includeMapping,
-  includeMappingNew,
+
+  includeMappingPorts,
+
+  //includeMappingNew,
   includeStringNew,
 ]);
 
