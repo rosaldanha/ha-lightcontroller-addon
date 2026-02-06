@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { Icon } from "@iconify/vue";
 import EditDeviceModal from "./components/EditDeviceModal.vue";
 import MonitorModal from "./components/MonitorModal.vue";
-import type { EsphomeConfig } from "./utils/EsphomeConfig";
+import { EsphomeConfig } from "./utils/EsphomeConfig";
 
 const showEditModal = ref(false);
 const showMonitorModal = ref(false);
@@ -21,6 +21,16 @@ const openEditModal = (device: EsphomeConfig) => {
   console.log("Abrindo edição para:", device.substitutions.device_name);
   deviceToEdit.value = device;
   showEditModal.value = true;
+};
+
+const openNewDeviceModal = () => {
+  const newDevice = new EsphomeConfig(
+    "new-device",
+    "00:00:00:00:00:00",
+    "172.18.0.0",
+    "",
+  );
+  openEditModal(newDevice);
 };
 </script>
 
@@ -100,6 +110,7 @@ const openEditModal = (device: EsphomeConfig) => {
 
     <div class="fixed bottom-6 right-6">
       <button
+        @click="openNewDeviceModal"
         class="bg-esphome-success hover:bg-green-600 text-white font-medium py-2 px-4 rounded-full shadow-lg flex items-center transition-colors"
       >
         <Icon icon="mdi:plus" class="text-xl mr-1" /> NEW DEVICE
