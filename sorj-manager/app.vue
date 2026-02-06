@@ -64,6 +64,7 @@ const openNewDeviceModal = () => {
           Monitor
         </button>
         <Icon
+          @click="showMonitorModal = true"
           icon="mdi:magnify"
           class="text-lg hover:text-white cursor-pointer"
         />
