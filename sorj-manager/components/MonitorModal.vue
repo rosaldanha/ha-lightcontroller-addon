@@ -41,7 +41,7 @@ const saveAction = (portInfo: ChangedPortInfo) => {
     piSwState: portInfo.config.substitutions[`pi${portInfo.port}swstate`],
     action: portInfo.action,
   };
-  alert(JSON.stringify(dataToShow, null, 2));
+  alert(JSON.stringify(portInfo, null, 2));
 };
 
 const connectToHA = async () => {
