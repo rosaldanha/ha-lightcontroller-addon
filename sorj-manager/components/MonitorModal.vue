@@ -134,7 +134,7 @@ const handleStateChange = async (entityId: string) => {
     "text." + deviceName + "_pi" + portNumber + "action";
   let entity_action_result: string = "";
   try {
-    entity_action_result = await $fetch("/api/entity_action", {
+    entity_action_result = await $fetch("api/entity_action", {
       // Use a opção 'query' para passar parâmetros GET
       query: {
         entityIdAction: entity_action,
