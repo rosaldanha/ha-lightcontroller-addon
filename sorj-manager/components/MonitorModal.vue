@@ -18,6 +18,8 @@ interface ChangedPortInfo {
   key: string;
   entityName: string; // e.g., kinconya16_0101_pi16
   action: string;
+  originalPiDevice: string | undefined;
+  originalPiSwState: string | undefined;
 }
 const changedPorts = ref<ChangedPortInfo[]>([]);
 
@@ -58,6 +60,12 @@ const saveAction = async (portInfo: ChangedPortInfo) => {
     console.error(err);
   }
   alert(JSON.stringify(portInfo, null, 2));
+
+  // IMPORTANTE: Atualize os valores originais para os valores atuais após salvar
+  portInfo.originalPiDevice =
+    portInfo.config.substitutions[`pi${portInfo.port}device`];
+  portInfo.originalPiSwState =
+    portInfo.config.substitutions[`pi${portInfo.port}swstate`];
 };
 
 const connectToHA = async () => {
@@ -176,6 +184,9 @@ const handleStateChange = async (entityId: string) => {
         key: key,
         entityName: entityName,
         action: entity_action_result, //TODO: SETUP ACTION
+        // Armazena o estado inicial dos campos editáveis
+        originalPiDevice: foundConfig.substitutions[`pi${portNumber}device`],
+        originalPiSwState: foundConfig.substitutions[`pi${portNumber}swstate`],
       });
     }
   }
@@ -302,7 +313,13 @@ onUnmounted(() => {
             <div class="mt-auto flex justify-end">
               <button
                 @click="saveAction(item)"
-                class="px-4 py-2 bg-esphome-accent hover:brightness-110 text-white rounded shadow-lg shadow-esphome-accent/20 transition-all text-sm font-medium flex items-center"
+                :disabled="
+                  item.originalPiDevice ===
+                    item.config.substitutions[`pi${item.port}device`] &&
+                  item.originalPiSwState ===
+                    item.config.substitutions[`pi${item.port}swstate`]
+                "
+                class="px-4 py-2 bg-esphome-accent hover:brightness-110 text-white rounded shadow-lg shadow-esphome-accent/20 transition-all text-sm font-medium flex items-center disabled:bg-gray-600 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 <Icon icon="mdi:content-save-outline" class="mr-2" /> Save
               </button>
