@@ -273,7 +273,8 @@ onUnmounted(() => {
                 <select
                   v-model="item.config.substitutions[`pi${item.port}device`]"
                   :id="`${item.key}-device`"
-                  class="input-field"
+                  class="input-field disabled:bg-gray-600"
+                  disabled
                 >
                   <option :value="undefined">None</option>
                   <option
@@ -295,7 +296,8 @@ onUnmounted(() => {
                   v-model="item.config.substitutions[`pi${item.port}swstate`]"
                   :id="`${item.key}-swstate`"
                   type="text"
-                  class="input-field"
+                  class="input-field disabled:bg-gray-600"
+                  disabled
                 />
               </div>
               <div>
