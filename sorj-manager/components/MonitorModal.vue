@@ -74,7 +74,7 @@ const connectToHA = async () => {
 
     socket.value = new WebSocket(wssUrl);
 
-    socket.value.onmessage = (event) => {
+    socket.value.onmessage = async (event) => {
       const msg = JSON.parse(event.data);
 
       if (msg.type === "auth_required") {
@@ -96,7 +96,7 @@ const connectToHA = async () => {
       ) {
         const entityId = msg.event.data.entity_id;
         if (WATCH_LIST.includes(entityId)) {
-          handleStateChange(entityId); //TODO: find entityId action.
+          await handleStateChange(entityId); //TODO: find entityId action.
         }
       }
     };
@@ -118,7 +118,7 @@ const connectToHA = async () => {
   }
 };
 
-const handleStateChange = (entityId: string) => {
+const handleStateChange = async (entityId: string) => {
   if (!props.devices) return;
 
   const entityName = entityId.split(".")[1];
@@ -132,6 +132,19 @@ const handleStateChange = (entityId: string) => {
   if (isNaN(portNumber)) return;
   const entity_action: string =
     "text." + deviceName + "_pi" + portNumber + "action";
+  let entity_action_result: string = "";
+  try {
+    entity_action_result = await $fetch("/api/entity_action", {
+      // Use a opção 'query' para passar parâmetros GET
+      query: {
+        entityIdAction: entity_action,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to get entity state:", error);
+    entity_action_result = "Failed to get entity state:" + error;
+  }
+
   const foundConfig = props.devices.find(
     (config) =>
       config.substitutions.device_name === deviceName ||
@@ -146,7 +159,7 @@ const handleStateChange = (entityId: string) => {
         port: portNumber,
         key: key,
         entityName: entityName,
-        action: entity_action, //TODO: SETUP ACTION
+        action: entity_action_result, //TODO: SETUP ACTION
       });
     }
   }
