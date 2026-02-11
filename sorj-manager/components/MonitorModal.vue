@@ -96,7 +96,7 @@ const connectToHA = async () => {
       ) {
         const entityId = msg.event.data.entity_id;
         if (WATCH_LIST.includes(entityId)) {
-          handleStateChange(entityId);
+          handleStateChange(entityId); //TODO: find entityId action.
         }
       }
     };
@@ -128,9 +128,10 @@ const handleStateChange = (entityId: string) => {
   const deviceName = entityName.substring(0, lastUnderscoreIndex);
   const portId = entityName.substring(lastUnderscoreIndex + 1);
   const portNumber = parseInt(portId.replace("pi", ""), 10);
-
+  //getaction
   if (isNaN(portNumber)) return;
-
+  const entity_action: string =
+    "text." + deviceName + "_pi" + portNumber + "action";
   const foundConfig = props.devices.find(
     (config) =>
       config.substitutions.device_name === deviceName ||
@@ -145,7 +146,7 @@ const handleStateChange = (entityId: string) => {
         port: portNumber,
         key: key,
         entityName: entityName,
-        action: "",
+        action: entity_action, //TODO: SETUP ACTION
       });
     }
   }
