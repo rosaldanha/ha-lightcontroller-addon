@@ -32,7 +32,7 @@ const subDeviceIds = (config: EsphomeConfig) => {
   return config.esphome.devices.map((d) => d.id).filter(Boolean);
 };
 
-const saveAction = (portInfo: ChangedPortInfo) => {
+const saveAction = async (portInfo: ChangedPortInfo) => {
   const dataToShow = {
     deviceName: portInfo.config.substitutions.device_name,
     port: portInfo.port,
@@ -41,6 +41,22 @@ const saveAction = (portInfo: ChangedPortInfo) => {
     piSwState: portInfo.config.substitutions[`pi${portInfo.port}swstate`],
     action: portInfo.action,
   };
+  const entity_action: string =
+    "text." +
+    portInfo.config.substitutions.device_name +
+    "_pi" +
+    portInfo.port +
+    "action";
+
+  try {
+    // Chama a API de update individual (existente)
+    await $fetch("api/restore", {
+      method: "POST",
+      body: { entity_id: entity_action, value: portInfo.action },
+    });
+  } catch (err) {
+    console.error(err);
+  }
   alert(JSON.stringify(portInfo, null, 2));
 };
 
