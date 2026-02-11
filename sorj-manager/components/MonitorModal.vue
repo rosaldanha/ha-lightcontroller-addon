@@ -20,6 +20,7 @@ interface ChangedPortInfo {
   action: string;
   originalPiDevice: string | undefined;
   originalPiSwState: string | undefined;
+  originalAction: string;
 }
 const changedPorts = ref<ChangedPortInfo[]>([]);
 
@@ -66,6 +67,7 @@ const saveAction = async (portInfo: ChangedPortInfo) => {
     portInfo.config.substitutions[`pi${portInfo.port}device`];
   portInfo.originalPiSwState =
     portInfo.config.substitutions[`pi${portInfo.port}swstate`];
+  portInfo.originalAction = portInfo.action;
 };
 
 const connectToHA = async () => {
@@ -187,6 +189,7 @@ const handleStateChange = async (entityId: string) => {
         // Armazena o estado inicial dos campos editáveis
         originalPiDevice: foundConfig.substitutions[`pi${portNumber}device`],
         originalPiSwState: foundConfig.substitutions[`pi${portNumber}swstate`],
+        originalAction: entity_action_result,
       });
     }
   }
@@ -317,7 +320,8 @@ onUnmounted(() => {
                   item.originalPiDevice ===
                     item.config.substitutions[`pi${item.port}device`] &&
                   item.originalPiSwState ===
-                    item.config.substitutions[`pi${item.port}swstate`]
+                    item.config.substitutions[`pi${item.port}swstate`] &&
+                  item.originalAction === item.action
                 "
                 class="px-4 py-2 bg-esphome-accent hover:brightness-110 text-white rounded shadow-lg shadow-esphome-accent/20 transition-all text-sm font-medium flex items-center disabled:bg-gray-600 disabled:opacity-70 disabled:cursor-not-allowed"
               >
